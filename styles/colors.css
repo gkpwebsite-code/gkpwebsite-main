@@ -1,0 +1,25 @@
+/* Brand photographic palette — photos carry color; UI stays restrained. */
+
+:root {
+  --gk-canvas: #f6f3ee;
+  --gk-canvas-deep: #0c0b0a;
+  --gk-ink: #1a1816;
+  --gk-ink-soft: #3d3a36;
+  --gk-mist: #e8e2d9;
+  --gk-beige: #c4b5a0;
+  --gk-beige-muted: #a89880;
+  --gk-line: #d6cfc4;
+  --gk-grain: rgba(26, 24, 22, 0.04);
+}
+
+.dark {
+  --gk-canvas: #0c0b0a;
+  --gk-canvas-deep: #050504;
+  --gk-ink: #f3efe8;
+  --gk-ink-soft: #b8b0a4;
+  --gk-mist: #1c1a18;
+  --gk-beige: #c4b5a0;
+  --gk-beige-muted: #8f8372;
+  --gk-line: #2a2723;
+  --gk-grain: rgba(243, 239, 232, 0.03);
+}
