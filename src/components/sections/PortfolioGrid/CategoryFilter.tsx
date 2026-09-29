@@ -94,6 +94,7 @@ export default function CategoryFilter({
         aria-label={open ? "Close category filter" : "Open category filter"}
         aria-expanded={open}
         aria-controls={listId}
+        data-intro-from="bottom"
         onClick={() => setOpen((current) => !current)}
         className="pointer-events-auto font-logo text-[9rem] font-bold md:text-[12rem] lg:text-[15rem]"
       >

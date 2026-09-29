@@ -10,7 +10,7 @@ export default function Navbar() {
         </div>
         <button
           type="button"
-          data-intro-fade
+          data-intro-from="right"
           className="pointer-events-auto font-logo text-2xl leading-none font-bold tracking-[0.06em] text-paper uppercase [writing-mode:vertical-rl] md:text-3xl"
         >
           Menu

@@ -21,7 +21,19 @@ export default function SmoothScroll() {
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
 
+    const root = document.documentElement;
+    const introObserver = new MutationObserver(() => {
+      if (root.dataset.intro !== "done") return;
+      lenis.start();
+      introObserver.disconnect();
+    });
+    if (root.dataset.intro !== "done") {
+      lenis.stop();
+      introObserver.observe(root, { attributeFilter: ["data-intro"] });
+    }
+
     return () => {
+      introObserver.disconnect();
       gsap.ticker.remove(tick);
       lenis.destroy();
       lenisRef.current = null;

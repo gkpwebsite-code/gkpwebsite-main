@@ -12,9 +12,12 @@
 }
 
 /*
- * Opening intro, driven by html[data-intro]: unset (logo centred on a blank screen)
- * → "play" (logo settles into its corner, overlay fades) → "done".
- * The --intro-pad-* values must match the Navbar container padding.
+ * Opening intro, driven by html[data-intro]:
+ *   unset    → letters roll on a blank screen while the counter loads
+ *   "reveal" → overlay fades and photos rise in behind the still-centred name
+ *   "play"   → name glides into its corner, fixed controls slide in from their edges
+ *   "done"   → everything at rest
+ * Phase timings live in Intro.tsx. The --intro-pad-* values must match the Navbar padding.
  */
 [data-intro-logo] {
   --intro-pad-x: 0.75rem;
@@ -35,40 +38,88 @@
   }
 }
 
-html:not([data-intro]) [data-intro-logo] {
+html:not([data-intro]) [data-intro-logo],
+html[data-intro="reveal"] [data-intro-logo] {
   transform: translate(
       calc(50vw - var(--intro-pad-x) - 50%),
       calc(50vh - var(--intro-pad-y) - 50%)
     )
     scale(var(--intro-scale));
-  animation: intro-logo-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 html[data-intro="play"] [data-intro-logo] {
-  transition: transform 1400ms cubic-bezier(0.83, 0, 0.17, 1);
+  transition: transform 1800ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-html:not([data-intro]) [data-intro-fade] {
-  opacity: 0;
+/*
+ * Each letter rolls up out of its mask, jumps (hidden) to just below, and rolls back up into
+ * place, rippling across the name. --i is each letter's position. The roll ends on the
+ * letter's own resting position, so removing the animation at "reveal" moves nothing.
+ * No will-change here: dropping a promoted layer re-rasterises the text and nudges it.
+ * The last letter lands at ~2000ms (200 + 24 × 32 + 1000), matching MIN_LOAD_MS in Intro.tsx.
+ */
+html:not([data-intro]) [data-intro-letter] {
+  animation: intro-letter-roll 1000ms both;
+  animation-delay: calc(var(--i) * 32ms + 200ms);
 }
 
-html[data-intro="play"] [data-intro-fade] {
-  transition: opacity 900ms cubic-bezier(0.22, 1, 0.36, 1) 600ms;
+@keyframes intro-letter-roll {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  50% {
+    transform: translateY(-130%);
+  }
+  50.01% {
+    transform: translateY(130%);
+    animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
+/*
+ * Grid photos rise into their tiles; Intro.tsx shuffles --i on each load for a random order.
+ * The same transition is declared for "play" so photos still rising when the name starts
+ * moving carry on smoothly instead of snapping into place.
+ */
+html:not([data-intro]) [data-intro-rise] {
+  transform: translateY(100%);
+  will-change: transform;
+}
+
+html[data-intro="reveal"] [data-intro-rise],
+html[data-intro="play"] [data-intro-rise] {
+  transition: transform 1700ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i) * 180ms + 250ms);
+  will-change: transform;
+}
+
+/* Fixed controls slide in from the edge they sit on, once the name starts moving. */
+html:not([data-intro]) [data-intro-from="right"],
+html[data-intro="reveal"] [data-intro-from="right"] {
+  transform: translateX(calc(100% + 2.5rem));
+}
+
+html:not([data-intro]) [data-intro-from="bottom"],
+html[data-intro="reveal"] [data-intro-from="bottom"] {
+  transform: translateY(calc(100% + 4rem));
+}
+
+html[data-intro="play"] [data-intro-from] {
+  transition: transform 1500ms cubic-bezier(0.16, 1, 0.3, 1) 700ms;
+}
+
+html[data-intro="reveal"] .intro-overlay,
 html[data-intro="play"] .intro-overlay {
   opacity: 0;
-  transition: opacity 500ms cubic-bezier(0.33, 1, 0.68, 1);
+  transition: opacity 1100ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 html[data-intro="done"] .intro-overlay {
   display: none;
-}
-
-@keyframes intro-logo-in {
-  from {
-    opacity: 0;
-  }
 }
 
 /* View-transition pseudo-elements can only be styled in CSS. */
