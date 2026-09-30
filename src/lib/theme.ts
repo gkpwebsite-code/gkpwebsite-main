@@ -29,6 +29,8 @@ export const fontFamily = {
   body: ["var(--font-body)", "Helvetica Neue", "Arial", "sans-serif"],
   /** Script accent: signatures, small romantic flourishes only */
   script: ["var(--font-script)", "cursive"],
+  /** Editorial serif: couple names on gallery pages */
+  display: ["var(--font-display)", "Times New Roman", "serif"],
   /** Couple names over portfolio images */
   caption: ["var(--font-caption)", "Helvetica Neue", "Arial", "sans-serif"],
   /** Wordmark name: logo only */

@@ -78,16 +78,35 @@ export const CATEGORIES = [
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
 
+export type GalleryImage = { src: string; width: number; height: number };
+
 export type Gallery = {
   slug: string;
   title: string;
   subtitle: string;
   cover: string;
-  images: readonly string[];
+  images: readonly GalleryImage[];
   categories: readonly CategoryId[];
 };
 
 const COVERS = "/images/cover-Portfolio-Images";
+const WEDDINGS = "/images/couples-wedding-folder";
+
+/** Builds a gallery's image list from filenames in its folder; all 4800×6400 unless listed as landscape. */
+function galleryImages(
+  slug: string,
+  files: readonly string[],
+  landscape: readonly string[] = [],
+): GalleryImage[] {
+  return files.map((file) => {
+    const wide = landscape.includes(file);
+    return {
+      src: `${WEDDINGS}/${slug}/${file}`,
+      width: wide ? 6400 : 4800,
+      height: wide ? 4800 : 6400,
+    };
+  });
+}
 
 /** Portfolio stories. Image filenames carry their size, e.g. "01_2500x3752.jpg". */
 export const GALLERIES: readonly Gallery[] = [
@@ -96,7 +115,45 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Sharon & Ishan",
     subtitle: "Wedding",
     cover: `${COVERS}/sharonIshan.jpg`,
-    images: [],
+    images: galleryImages(
+      "sharon-ishan",
+      [
+        "2.jpg",
+        "2SH.jpg",
+        "3.jpg",
+        "3SH.jpg",
+        "4SH.jpg",
+        "6.jpg",
+        "6SH.jpg",
+        "8SH.jpg",
+        "9SH.jpg",
+        "10.jpg",
+        "11.jpg",
+        "12.jpg",
+        "13.jpg",
+        "14.jpg",
+        "16.jpg",
+        "17.jpg",
+        "18.jpg",
+        "19.jpg",
+        "20.jpg",
+        "20SH.jpg",
+        "21.jpg",
+        "22.jpg",
+        "22SH.jpg",
+        "23.jpg",
+        "23SH.jpg",
+        "24.jpg",
+        "24SH.jpg",
+        "25SH.jpg",
+        "26SH.jpg",
+        "28SH.jpg",
+        "29SH.jpg",
+        "1118SH.jpg",
+        "2111SH.jpg",
+      ],
+      ["12.jpg", "16.jpg"],
+    ),
     categories: ["weddings", "couples"],
   },
   {

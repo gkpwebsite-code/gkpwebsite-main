@@ -1,8 +1,11 @@
 "use client";
 
-import { ViewTransition } from "react";
 import { usePathname } from "next/navigation";
 
+/**
+ * Fades each new page in. Opacity only: a transform here would re-anchor the fixed controls
+ * inside pages, and a view transition would snapshot the header and freeze the logo's glide.
+ */
 export default function PageTransition({
   children,
 }: {
@@ -11,13 +14,8 @@ export default function PageTransition({
   const pathname = usePathname();
 
   return (
-    <ViewTransition
-      key={pathname}
-      enter="page-enter"
-      exit="page-exit"
-      default="none"
-    >
+    <div key={pathname} className="page-enter">
       {children}
-    </ViewTransition>
+    </div>
   );
 }

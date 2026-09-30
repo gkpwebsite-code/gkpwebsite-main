@@ -23,6 +23,25 @@
   --intro-pad-x: 0.75rem;
   --intro-pad-y: 1.5rem;
   --intro-scale: 1.5;
+  --logo-x: 0px;
+  transform: translate(var(--logo-x), 0) scale(1);
+  transition: transform 1400ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/*
+ * Couple galleries (html[data-gallery], set by GalleryView) rest the name at top centre and hide
+ * the scrollbar, since the page reads sideways.
+ */
+html[data-gallery] [data-intro-logo] {
+  --logo-x: calc(50vw - var(--intro-pad-x) - 50%);
+}
+
+html[data-gallery] {
+  scrollbar-width: none;
+}
+
+html[data-gallery]::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 48rem) {
@@ -122,38 +141,84 @@ html[data-intro="done"] .intro-overlay {
   display: none;
 }
 
-/* View-transition pseudo-elements can only be styled in CSS. */
-::view-transition {
-  pointer-events: none;
+/*
+ * Couple gallery entrance, started by GalleryView setting [data-entered] on the gallery once
+ * the page is visible (after the intro on a fresh load, straight away on navigation):
+ * the cover unveils upward as it settles from a slight zoom, while the names rise line by line.
+ */
+[data-gallery-cover] {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 1600ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-::view-transition-old(.page-exit) {
-  animation: 280ms cubic-bezier(0.22, 1, 0.36, 1) both page-exit;
+[data-gallery-cover] > * {
+  transform: scale(1.2);
+  transition: transform 2600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-::view-transition-new(.page-enter) {
-  animation: 640ms cubic-bezier(0.22, 1, 0.36, 1) 160ms both page-enter;
+[data-gallery-line] {
+  transform: translateY(115%);
+  transition: transform 1400ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i) * 120ms + 450ms);
 }
 
-@keyframes page-exit {
-  to {
-    opacity: 0;
-    transform: translate3d(0, -12px, 0);
+[data-gallery-fade] {
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 1200ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i) * 120ms + 450ms);
+}
+
+[data-entered] [data-gallery-cover] {
+  clip-path: inset(0);
+}
+
+[data-entered] [data-gallery-cover] > *,
+[data-entered] [data-gallery-line],
+[data-entered] [data-gallery-fade] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Gallery photos fade in once decoded rather than popping in mid-scroll. */
+[data-gallery-photo] {
+  opacity: 0;
+  transition: opacity 900ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+[data-gallery-photo][data-loaded] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-intro-logo],
+  [data-gallery-cover],
+  [data-gallery-cover] > *,
+  [data-gallery-line],
+  [data-gallery-fade],
+  [data-gallery-photo] {
+    transition: none !important;
   }
+}
+
+/*
+ * New pages fade in. Opacity only, and backwards fill so nothing lingers once it ends: a
+ * lingering opacity or transform would isolate the page from the inverted fixed controls.
+ */
+.page-enter {
+  animation: page-enter 700ms cubic-bezier(0.33, 1, 0.68, 1) backwards;
 }
 
 @keyframes page-enter {
   from {
     opacity: 0;
-    transform: translate3d(0, 20px, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(*),
-  ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
+  .page-enter {
+    animation: none;
   }
 }

@@ -52,7 +52,25 @@ const caption = localFont({
   display: "swap",
 });
 
+const display = localFont({
+  src: [
+    {
+      path: "../../public/fonts/silk-serif/silk-serif-regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/silk-serif/silk-serif-italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  variable: "--font-display",
+  display: "swap",
+});
+
 export const fontVariables = [
+  display.variable,
   caption.variable,
   title.variable,
   body.variable,
