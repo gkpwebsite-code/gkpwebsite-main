@@ -9,10 +9,11 @@ import {
   SOCIAL_LINKS,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import PalettePicker from "./PalettePicker";
 
 /** Panel unveils top-down; its contents rise in once it is mostly drawn. */
 const PANEL_OPEN_MS = 900;
-const PANEL_CLOSE_MS = 700;
+export const PANEL_CLOSE_MS = 700;
 const ITEM_DELAY_MS = 380;
 const ITEM_STAGGER_MS = 90;
 
@@ -20,9 +21,9 @@ const ITEM_STAGGER_MS = 90;
 const BIG_TEXT =
   "font-logo text-[13vw] leading-[0.86] font-bold tracking-[-0.03em] uppercase md:text-[8.5vw] lg:text-[8vw]";
 
-/** While any big link is hovered, the others fade to grey and the hovered one stays white. */
+/** While any link is hovered, the others fade back and the hovered one turns the accent colour. */
 const HOVER_FOCUS =
-  "group-has-[[data-menu-link]:hover]/menu:text-paper/30 hover:text-paper!";
+  "group-has-[[data-menu-link]:hover]/menu:text-menu-text/30 hover:text-menu-accent!";
 function riseClass(open: boolean) {
   return cn(
     "block transition-[translate,opacity] ease-[cubic-bezier(0.16,1,0.3,1)]",
@@ -103,7 +104,7 @@ export default function Menu({
       aria-hidden={!open}
       inert={!open}
       className={cn(
-        "fixed inset-0 z-[55] bg-night text-paper transition-[clip-path] ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none",
+        "fixed inset-0 z-[55] bg-menu-bg text-menu-text transition-[clip-path] ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none",
         open
           ? "[clip-path:inset(0_0_0_0)]"
           : "pointer-events-none [clip-path:inset(0_0_100%_0)]",
@@ -205,14 +206,14 @@ export default function Menu({
             order={otherPages.length + 1}
             className="mt-16 md:mt-10"
           >
-            <ul className="flex justify-between font-logo-sub text-[0.625rem] leading-none tracking-[0.1em] text-paper/50 uppercase md:justify-start md:gap-x-6 md:text-sm md:tracking-[0.12em]">
+            <ul className="flex justify-between font-logo-sub text-[0.625rem] leading-none tracking-[0.1em] text-menu-text/50 uppercase md:justify-start md:gap-x-6 md:text-sm md:tracking-[0.12em]">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     tabIndex={tabIndex}
                     onClick={onClose}
-                    className="transition-colors hover:text-paper"
+                    className="transition-colors hover:text-menu-accent"
                   >
                     {link.label}
                   </Link>
@@ -225,6 +226,10 @@ export default function Menu({
             </ul>
           </Rise>
         </div>
+      </div>
+
+      <div className="absolute top-24 left-3 md:top-auto md:right-5 md:bottom-8 md:left-auto">
+        <PalettePicker tabIndex={tabIndex} />
       </div>
     </div>
   );

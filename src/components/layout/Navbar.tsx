@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Container from "@/components/common/Container";
 import Logo from "@/components/common/Logo";
-import Menu from "@/components/layout/Menu";
+import Menu, { PANEL_CLOSE_MS } from "@/components/layout/Menu";
 import { ROUTES } from "@/lib/constants";
 import { pauseScroll, resumeScroll } from "@/lib/lenis";
 import { cn } from "@/lib/utils";
 
 const SIDE_LABEL =
-  "pointer-events-auto cursor-pointer font-logo text-xl leading-none font-bold tracking-[-0.02em] text-paper uppercase [writing-mode:vertical-rl] md:text-3xl lg:text-4xl";
+  "pointer-events-auto cursor-pointer font-logo text-xl leading-none font-bold tracking-[-0.02em] uppercase [writing-mode:vertical-rl] md:text-3xl lg:text-4xl";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -20,9 +20,14 @@ export default function Navbar() {
   const [openOn, setOpenOn] = useState<string | null>(null);
   const open = openOn === pathname;
   const close = () => setOpenOn(null);
+  const chromeTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!open) return;
+    // Solid menu-coloured chrome over the panel, held until the panel has fully closed.
+    const root = document.documentElement;
+    window.clearTimeout(chromeTimer.current);
+    root.dataset.menu = "";
     pauseScroll();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpenOn(null);
@@ -31,15 +36,18 @@ export default function Navbar() {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       resumeScroll();
+      chromeTimer.current = window.setTimeout(() => {
+        delete root.dataset.menu;
+      }, PANEL_CLOSE_MS);
     };
   }, [open]);
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-[60] mix-blend-difference">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-[60] text-paper mix-blend-difference in-data-[menu]:text-menu-text in-data-[menu]:mix-blend-normal">
         <Container className="flex max-w-none items-start justify-between px-3 py-6 md:px-5">
           <div data-intro-logo className="inline-block">
-            <Logo className="pointer-events-auto text-paper" />
+            <Logo className="pointer-events-auto" />
           </div>
           <button
             type="button"
@@ -57,7 +65,7 @@ export default function Navbar() {
         </Container>
       </header>
       <Menu id={menuId} open={open} pathname={pathname} onClose={close} />
-      <footer className="pointer-events-none fixed inset-x-0 bottom-0 z-50 mix-blend-difference">
+      <footer className="pointer-events-none fixed inset-x-0 bottom-0 z-50 text-paper mix-blend-difference">
         <Container className="flex max-w-none items-end justify-end px-3 pt-6 pb-8 md:px-5 md:pb-12">
           <Link
             href={ROUTES.CONTACT}

@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
+/* Menu palette defaults (the original black and white); the menu's palette picker overrides these at runtime. */
+:root {
+  --menu-bg: #0a0a0a;
+  --menu-text: #ffffff;
+  --menu-accent: #ffffff;
+}
+
 @layer base {
   body {
     @apply bg-canvas font-body text-ink antialiased;

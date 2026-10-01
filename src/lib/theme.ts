@@ -18,6 +18,10 @@ export const colors = {
   accent: "#6B6B6B",
   /** Muted captions, eyebrows, metadata */
   muted: "#8A8A8A",
+  /** Full-screen menu colours; values come from the active palette in src/lib/palettes.ts */
+  "menu-bg": "var(--menu-bg)",
+  "menu-text": "var(--menu-text)",
+  "menu-accent": "var(--menu-accent)",
 } as const;
 
 export type ColorName = keyof typeof colors;

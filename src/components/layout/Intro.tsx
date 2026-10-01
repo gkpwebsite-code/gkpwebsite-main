@@ -17,13 +17,17 @@ const easeInOut = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 
 /** Gives each grid photo a random entrance slot so they rise in a different order every load. */
 function shuffleRiseOrder() {
-  const tiles = Array.from(document.querySelectorAll<HTMLElement>("[data-intro-rise]"));
+  const tiles = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-intro-rise]"),
+  );
   const slots = tiles.map((_, index) => index);
   for (let index = slots.length - 1; index > 0; index--) {
     const swap = Math.floor(Math.random() * (index + 1));
     [slots[index], slots[swap]] = [slots[swap], slots[index]];
   }
-  tiles.forEach((tile, index) => tile.style.setProperty("--i", String(slots[index])));
+  tiles.forEach((tile, index) =>
+    tile.style.setProperty("--i", String(slots[index])),
+  );
 }
 
 /**
