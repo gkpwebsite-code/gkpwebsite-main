@@ -41,74 +41,87 @@ export default function CategoryFilter({
   }, [open]);
 
   return (
-    <div
-      ref={rootRef}
-      className="pointer-events-none fixed bottom-0 left-0 z-50 flex flex-col items-start pb-8 pl-6 text-paper mix-blend-difference md:pb-12 md:pl-9"
-    >
-      <ul
-        id={listId}
-        aria-label="Filter by category"
+    <>
+      <div
+        aria-hidden="true"
         className={cn(
-          "mb-4 flex flex-col gap-2.5",
-          open && "pointer-events-auto",
+          "fixed inset-0 z-40 bg-ink/60 backdrop-blur-md transition-opacity duration-700 ease-[cubic-bezier(0.33,1,0.68,1)]",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
+      />
+      <div
+        ref={rootRef}
+        className="pointer-events-none fixed bottom-0 left-0 z-50 flex flex-col items-start pb-8 pl-6 text-paper mix-blend-difference md:pb-12 md:pl-9"
       >
-        {OPTIONS.map((option, index) => {
-          const active = option.id === value;
-          const order = OPTIONS.length - 1 - index;
-          return (
-            <li
-              key={option.id}
-              className={cn(
-                "transition-[opacity,translate] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
-              )}
-              style={{ transitionDelay: `${(open ? order : index) * 40}ms` }}
-            >
-              <button
-                type="button"
-                tabIndex={open ? 0 : -1}
-                aria-pressed={active}
-                onClick={() => {
-                  onChange(option.id);
-                  setOpen(false);
-                }}
-                className="group flex items-center gap-3 font-logo-sub text-xs leading-none tracking-[0.15em] uppercase md:text-sm"
-              >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "h-px bg-current transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                    active ? "w-6" : "w-0 group-hover:w-3",
-                  )}
-                />
-                {option.label}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      <button
-        type="button"
-        aria-label={open ? "Close category filter" : "Open category filter"}
-        aria-expanded={open}
-        aria-controls={listId}
-        data-intro-from="bottom"
-        onClick={() => setOpen((current) => !current)}
-        className="pointer-events-auto font-logo text-[9rem] font-bold md:text-[12rem] lg:text-[15rem]"
-      >
-        {/* Box sized to the Forma Micro Bold asterisk outline (0.337em tall, top-aligned at leading 0.9) so it sits flush and rotates about its own centre. */}
-        <span
-          aria-hidden="true"
+        <ul
+          id={listId}
+          aria-label="Filter by category"
           className={cn(
-            "block h-[0.337em] w-[0.352em] origin-[0.171em_0.169em] leading-[0.9] transition-[rotate] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-            open && "rotate-90",
+            "mb-6 flex flex-col gap-4 md:mb-8 md:gap-5",
+            open && "pointer-events-auto",
           )}
         >
-          *
-        </span>
-      </button>
-    </div>
+          {OPTIONS.map((option, index) => {
+            const active = option.id === value;
+            const order = OPTIONS.length - 1 - index;
+            return (
+              <li
+                key={option.id}
+                className={cn(
+                  "transition-[opacity,translate] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  open
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-3 opacity-0",
+                )}
+                style={{ transitionDelay: `${(open ? order : index) * 50}ms` }}
+              >
+                <button
+                  type="button"
+                  tabIndex={open ? 0 : -1}
+                  aria-pressed={active}
+                  onClick={() => {
+                    onChange(option.id);
+                    setOpen(false);
+                  }}
+                  className="group flex items-center gap-4 font-logo-sub text-2xl leading-none tracking-[0.08em] uppercase md:text-4xl"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "h-px bg-current transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:h-0.5",
+                      active
+                        ? "w-10 md:w-14"
+                        : "w-0 group-hover:w-5 md:group-hover:w-7",
+                    )}
+                  />
+                  {option.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <button
+          type="button"
+          aria-label={open ? "Close category filter" : "Open category filter"}
+          aria-expanded={open}
+          aria-controls={listId}
+          data-intro-from="bottom"
+          onClick={() => setOpen((current) => !current)}
+          className="pointer-events-auto font-logo text-[9rem] font-bold md:text-[12rem] lg:text-[15rem]"
+        >
+          {/* Box sized to the Forma Micro Bold asterisk outline (0.337em tall, top-aligned at leading 0.9) so it sits flush and rotates about its own centre. */}
+          <span
+            aria-hidden="true"
+            className={cn(
+              "block h-[0.337em] w-[0.352em] origin-[0.171em_0.169em] leading-[0.9] transition-[rotate] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              open && "rotate-90",
+            )}
+          >
+            *
+          </span>
+        </button>
+      </div>
+    </>
   );
 }
