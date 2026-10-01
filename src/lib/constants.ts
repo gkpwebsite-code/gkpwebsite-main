@@ -39,15 +39,11 @@ export const LEGAL_LINKS: readonly NavLink[] = [
   { label: "Terms & Conditions", href: ROUTES.TERMS },
 ];
 
-/** `icon` is a single SVG path drawn on a 24×24 viewBox with fill-rule evenodd. */
-export type SocialLink = { name: string; href: string; icon: string };
+export type SocialLink = { name: string; href: string };
 
 export const SOCIAL_LINKS: readonly SocialLink[] = [
-  {
-    name: "Instagram",
-    href: "https://www.instagram.com/",
-    icon: "M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9a5.5 5.5 0 0 1-5.5 5.5h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Zm0 1.8A3.7 3.7 0 0 0 3.8 7.5v9a3.7 3.7 0 0 0 3.7 3.7h9a3.7 3.7 0 0 0 3.7-3.7v-9a3.7 3.7 0 0 0-3.7-3.7h-9ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Zm5.25-3.3a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z",
-  },
+  { name: "Instagram", href: "https://www.instagram.com/" },
+  { name: "Facebook", href: "https://www.facebook.com/" },
 ];
 
 /* --------------------------------- Images --------------------------------- */

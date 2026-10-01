@@ -47,7 +47,10 @@ export default function Navbar() {
             aria-expanded={open}
             aria-controls={menuId}
             onClick={() => setOpenOn(open ? null : pathname)}
-            className={SIDE_LABEL}
+            className={cn(
+              SIDE_LABEL,
+              "transition-opacity duration-300 hover:opacity-60 focus-visible:opacity-60",
+            )}
           >
             {open ? "Close" : "Menu"}
           </button>

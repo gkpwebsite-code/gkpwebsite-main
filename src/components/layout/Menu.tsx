@@ -16,6 +16,13 @@ const PANEL_CLOSE_MS = 700;
 const ITEM_DELAY_MS = 380;
 const ITEM_STAGGER_MS = 90;
 
+/** Shared by CONTACT and the page links; phones are capped by TESTIMONIALS fitting the width. */
+const BIG_TEXT =
+  "font-logo text-[13vw] leading-[0.86] font-bold tracking-[-0.03em] uppercase md:text-[8.5vw] lg:text-[8vw]";
+
+/** While any big link is hovered, the others fade to grey and the hovered one stays white. */
+const HOVER_FOCUS =
+  "group-has-[[data-menu-link]:hover]/menu:text-paper/30 hover:text-paper!";
 function riseClass(open: boolean) {
   return cn(
     "block transition-[translate,opacity] ease-[cubic-bezier(0.16,1,0.3,1)]",
@@ -83,6 +90,9 @@ export default function Menu({
   onClose: () => void;
 }) {
   const tabIndex = open ? 0 : -1;
+  // The page you're on is left out; /portfolio is the same grid as home.
+  const currentPage = pathname === ROUTES.PORTFOLIO ? ROUTES.HOME : pathname;
+  const otherPages = MENU_LINKS.filter((link) => link.href !== currentPage);
 
   return (
     <div
@@ -102,7 +112,7 @@ export default function Menu({
         transitionDuration: `${open ? PANEL_OPEN_MS : PANEL_CLOSE_MS}ms`,
       }}
     >
-      <div className="flex h-full flex-col justify-between px-3 pt-36 pb-6 md:px-5 md:pt-44 md:pr-24 md:pb-8">
+      <div className="group/menu flex h-full flex-col justify-between px-3 pt-36 pb-3 md:px-5 md:pt-44 md:pr-24 md:pb-8">
         <div className="self-end text-right">
           <Rise open={open} order={0} className="-my-[0.04em] py-[0.04em]">
             <Link
@@ -110,13 +120,18 @@ export default function Menu({
               tabIndex={tabIndex}
               onClick={onClose}
               aria-label="Contact"
-              className="group block font-logo text-[14vw] leading-[0.86] font-bold tracking-[-0.03em] uppercase md:text-[9vw] lg:text-[8vw]"
+              data-menu-link
+              className={cn(
+                "group block transition-colors duration-500",
+                BIG_TEXT,
+                HOVER_FOCUS,
+              )}
             >
               <RollingWord text="Contact" />
             </Link>
           </Rise>
-          <Rise open={open} order={1} className="mt-4 md:mt-5">
-            <ul className="flex justify-end gap-5 font-logo-sub text-xs leading-none tracking-[0.15em] text-paper/60 uppercase md:text-sm">
+          <Rise open={open} order={1} className="mt-4 md:mt-6">
+            <ul className="flex justify-end gap-6 font-logo text-base leading-none font-bold tracking-[-0.01em] uppercase md:text-xl lg:text-2xl">
               {SOCIAL_LINKS.map((social) => (
                 <li key={social.name}>
                   <a
@@ -124,7 +139,11 @@ export default function Menu({
                     target="_blank"
                     rel="noreferrer"
                     tabIndex={tabIndex}
-                    className="transition-colors hover:text-paper"
+                    data-menu-link
+                    className={cn(
+                      "transition-colors duration-500",
+                      HOVER_FOCUS,
+                    )}
                   >
                     {social.name}
                   </a>
@@ -132,65 +151,61 @@ export default function Menu({
               ))}
             </ul>
           </Rise>
+          <Rise open={open} order={2} className="mt-8 md:mt-12">
+            <Link
+              href={ROUTES.FAQ}
+              tabIndex={tabIndex}
+              onClick={onClose}
+              aria-current={pathname === ROUTES.FAQ ? "page" : undefined}
+              aria-label="FAQ"
+              data-menu-link
+              className={cn(
+                "group block font-logo text-4xl leading-none font-bold tracking-[-0.02em] uppercase transition-colors duration-500 md:text-5xl lg:text-6xl",
+                HOVER_FOCUS,
+              )}
+            >
+              <RollingWord text="FAQ" />
+            </Link>
+          </Rise>
         </div>
 
         <div>
-          <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-            <nav aria-label="Main">
-              <ul className="flex flex-col">
-                {MENU_LINKS.map((link, index) => {
-                  const active = link.href === pathname;
-                  return (
-                    <li
-                      key={link.href}
-                      className="-my-[0.04em] overflow-hidden py-[0.04em]"
+          <nav aria-label="Main">
+            <ul className="flex flex-col gap-3 md:gap-0">
+              {otherPages.map((link, index) => {
+                return (
+                  <li
+                    key={link.href}
+                    className="-my-[0.04em] overflow-hidden py-[0.04em]"
+                  >
+                    <Link
+                      href={link.href}
+                      tabIndex={tabIndex}
+                      onClick={onClose}
+                      aria-label={link.label}
+                      style={riseDelay(open, index + 1)}
+                      data-menu-link
+                      className={cn(
+                        riseClass(open),
+                        BIG_TEXT,
+                        HOVER_FOCUS,
+                        "group transition-[translate,opacity,color]",
+                      )}
                     >
-                      <Link
-                        href={link.href}
-                        tabIndex={tabIndex}
-                        onClick={onClose}
-                        aria-current={active ? "page" : undefined}
-                        aria-label={link.label}
-                        style={riseDelay(open, index + 1)}
-                        className={cn(
-                          riseClass(open),
-                          "group flex items-start gap-2 font-logo text-[10vw] leading-[0.86] font-bold tracking-[-0.03em] uppercase transition-[translate,opacity,color] md:gap-4 md:text-[8.5vw] lg:text-[7.5vw]",
-                          active
-                            ? "text-paper"
-                            : "text-paper/30 hover:text-paper focus-visible:text-paper",
-                        )}
-                      >
-                        <span className="mt-[0.5em] font-caption text-[0.625rem] leading-none font-normal tracking-[0.15em] md:text-xs">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <RollingWord text={link.label} />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-
-            <Rise open={open} order={MENU_LINKS.length + 1}>
-              <Link
-                href={ROUTES.FAQ}
-                tabIndex={tabIndex}
-                onClick={onClose}
-                aria-current={pathname === ROUTES.FAQ ? "page" : undefined}
-                aria-label="FAQ"
-                className="group block font-logo text-2xl leading-none font-bold tracking-[-0.02em] uppercase md:text-right md:text-3xl"
-              >
-                <RollingWord text="FAQ" />
-              </Link>
-            </Rise>
-          </div>
+                      <RollingWord text={link.label} />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
           <Rise
             open={open}
-            order={MENU_LINKS.length + 2}
-            className="mt-8 md:mt-10"
+            order={otherPages.length + 1}
+            className="mt-16 md:mt-10"
           >
-            <ul className="flex flex-wrap gap-x-5 gap-y-2 font-logo-sub text-[0.625rem] leading-none tracking-[0.15em] text-paper/40 uppercase">
+            <ul className="flex justify-between font-logo-sub text-[0.625rem] leading-none tracking-[0.1em] text-paper/50 uppercase md:justify-start md:gap-x-6 md:text-sm md:tracking-[0.12em]">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -204,7 +219,8 @@ export default function Menu({
                 </li>
               ))}
               <li>
-                &copy; {new Date().getFullYear()} {SITE_NAME}
+                &copy; {new Date().getFullYear()}
+                <span className="hidden md:inline"> {SITE_NAME}</span>
               </li>
             </ul>
           </Rise>
