@@ -19,7 +19,7 @@ export default function Navbar() {
           </button>
         </Container>
       </header>
-      <div className="pointer-events-none fixed right-3 bottom-[calc(2rem+env(safe-area-inset-bottom))] z-50 mix-blend-difference md:right-5 md:bottom-6">
+      <div className="pointer-events-none fixed top-[calc(100svh-1.5rem)] right-3 z-50 -translate-y-full mix-blend-difference md:top-auto md:right-5 md:bottom-6 md:translate-y-0">
         <Link href={ROUTES.CONTACT} data-intro-from="right" className={`block ${SIDE_LABEL}`}>
           Contact
         </Link>
