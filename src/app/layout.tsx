@@ -5,7 +5,6 @@ import Intro from "@/components/layout/Intro";
 import Navbar from "@/components/layout/Navbar";
 import PageTransition from "@/components/layout/PageTransition";
 import SmoothScroll from "@/components/layout/SmoothScroll";
-import SiteFooter from "@/components/sections/SiteFooter/SiteFooter";
 import StructuredData from "@/components/seo/StructuredData";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
 import { fontVariables } from "@/lib/fonts";
@@ -51,7 +50,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="flex-1">
           <PageTransition>{children}</PageTransition>
         </main>
-        <SiteFooter />
         <Analytics />
         <SpeedInsights />
       </body>

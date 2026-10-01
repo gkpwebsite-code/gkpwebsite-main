@@ -29,13 +29,6 @@ export const NAV_LINKS: readonly NavLink[] = [
   { label: "Inquire", href: ROUTES.CONTACT },
 ];
 
-export const FOOTER_LINKS: readonly NavLink[] = [
-  { label: "Home", href: ROUTES.HOME },
-  { label: "Portfolio", href: ROUTES.PORTFOLIO },
-  { label: "About", href: ROUTES.ABOUT },
-  { label: "Inquire", href: ROUTES.CONTACT },
-];
-
 /** `icon` is a single SVG path drawn on a 24×24 viewBox with fill-rule evenodd. */
 export type SocialLink = { name: string; href: string; icon: string };
 
