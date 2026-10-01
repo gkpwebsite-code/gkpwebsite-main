@@ -29,12 +29,12 @@ export default function Logo({ className }: { className?: string }) {
       aria-label={SITE_NAME}
       className={cn("inline-flex w-max flex-col items-center", className)}
     >
-      <span className="font-logo text-2xl leading-none font-bold tracking-[0.06em] whitespace-nowrap uppercase md:text-3xl">
+      <span className="font-logo text-xl leading-none font-bold tracking-[0.06em] whitespace-nowrap uppercase md:text-3xl">
         <IntroLetters text={SITE_SHORT_NAME} offset={0} />
       </span>
       <span
         aria-hidden="true"
-        className="mt-0.5 -mr-[0.15em] font-logo-sub text-[0.5625rem] leading-none font-normal tracking-[0.15em] uppercase md:text-[0.625rem]"
+        className="mt-0.5 -mr-[0.15em] font-logo-sub text-[0.46875rem] leading-none font-normal tracking-[0.15em] uppercase md:text-[0.625rem]"
       >
         <IntroLetters text={DISCIPLINE} offset={SITE_SHORT_NAME.length} />
       </span>

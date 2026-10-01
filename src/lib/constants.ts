@@ -14,7 +14,11 @@ export const ROUTES = {
   HOME: "/",
   PORTFOLIO: "/portfolio",
   ABOUT: "/about",
+  TESTIMONIALS: "/testimonials",
   CONTACT: "/inquire",
+  FAQ: "/faq",
+  PRIVACY: "/privacy-policy",
+  TERMS: "/terms",
 } as const;
 
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];
@@ -23,10 +27,16 @@ export type Route = (typeof ROUTES)[keyof typeof ROUTES];
 
 export type NavLink = { label: string; href: Route };
 
-export const NAV_LINKS: readonly NavLink[] = [
-  { label: "Portfolio", href: ROUTES.PORTFOLIO },
-  { label: "About", href: ROUTES.ABOUT },
-  { label: "Inquire", href: ROUTES.CONTACT },
+/** Full-screen menu; the portfolio is the home page. */
+export const MENU_LINKS: readonly NavLink[] = [
+  { label: "Portfolio", href: ROUTES.HOME },
+  { label: "About Us", href: ROUTES.ABOUT },
+  { label: "Testimonials", href: ROUTES.TESTIMONIALS },
+];
+
+export const LEGAL_LINKS: readonly NavLink[] = [
+  { label: "Privacy Policy", href: ROUTES.PRIVACY },
+  { label: "Terms & Conditions", href: ROUTES.TERMS },
 ];
 
 /** `icon` is a single SVG path drawn on a 24×24 viewBox with fill-rule evenodd. */
@@ -85,7 +95,7 @@ export type Gallery = {
 const COVERS = "/images/cover-Portfolio-Images";
 const WEDDINGS = "/images/couples-wedding-folder";
 
-/** Builds a gallery's image list from filenames in its folder; all 4800×6400 unless listed as landscape. */
+/** Builds a gallery's image list from filenames in its folder; all 2700×3600 unless listed as landscape. */
 function galleryImages(
   slug: string,
   files: readonly string[],
@@ -95,8 +105,8 @@ function galleryImages(
     const wide = landscape.includes(file);
     return {
       src: `${WEDDINGS}/${slug}/${file}`,
-      width: wide ? 6400 : 4800,
-      height: wide ? 4800 : 6400,
+      width: wide ? 3600 : 2700,
+      height: wide ? 2700 : 3600,
     };
   });
 }

@@ -23,6 +23,16 @@ export function allowHorizontalGestures() {
   };
 }
 
+/** Freezes page scrolling, e.g. while the full-screen menu is open. */
+export function pauseScroll() {
+  instance?.stop();
+}
+
+/** Resumes page scrolling, unless the opening intro is still holding it. */
+export function resumeScroll() {
+  if (document.documentElement.dataset.intro === "done") instance?.start();
+}
+
 function subscribe(onChange: () => void) {
   listeners.add(onChange);
   return () => {
