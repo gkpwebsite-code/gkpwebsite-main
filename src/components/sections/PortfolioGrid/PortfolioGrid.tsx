@@ -32,7 +32,7 @@ function PortfolioTile({
       ref={ref}
       href={galleryHref(gallery.slug)}
       aria-label={gallery.title}
-      className="group relative block aspect-[3/4] overflow-hidden bg-canvas"
+      className="group relative block aspect-[3/4] overflow-hidden bg-canvas [content-visibility:auto]"
       style={{
         opacity: visible ? 1 : 0,
         transition: `opacity 1.2s ${EASE} ${delay}ms`,

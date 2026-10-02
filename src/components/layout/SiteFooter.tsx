@@ -9,11 +9,11 @@ import {
   LEGAL_LINKS,
   ROUTES,
   SITE_NAME,
-  SITE_SHORT_NAME,
   SOCIAL_LINKS,
   WEBSITE_CREDIT,
 } from "@/lib/constants";
 import RollingWord from "@/components/common/RollingWord";
+import FooterWordmark from "./FooterWordmark";
 import { useLenis } from "@/lib/lenis";
 import { cn } from "@/lib/utils";
 
@@ -26,34 +26,11 @@ const UNDERLINE =
 const SMALL =
   "font-logo-sub text-[0.6875rem] leading-none tracking-[0.1em] text-ink/45 uppercase md:text-[0.75rem] md:tracking-[0.12em]";
 
-/**
- * Wordmark sized to the row: Forma Micro Bold "GAUTAM KHULLAR" is ~8.34em wide at -0.03em
- * tracking, so the font size is the free width over 8.4. The right padding clears CONTACT.
- */
-const WORDMARK_SIZE =
-  "pr-10 text-[calc((100vw-3.25rem)/8.4)] md:pr-20 md:text-[calc((100vw-6.25rem)/8.4)]";
-
 /** Every page but a gallery ends with this; galleries close on their next-wedding panel. */
 export default function SiteFooter() {
   const pathname = usePathname();
-  const wordmarkRef = useRef<HTMLParagraphElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis();
-
-  useEffect(() => {
-    const wordmark = wordmarkRef.current;
-    if (!wordmark) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        wordmark.dataset.inview = "";
-        observer.disconnect();
-      },
-      { threshold: 0.4 },
-    );
-    observer.observe(wordmark);
-    return () => observer.disconnect();
-  }, [pathname]);
 
   // While the footer's bottom rows are on screen, the corner * filter steps aside for the wordmark.
   useEffect(() => {
@@ -82,85 +59,91 @@ export default function SiteFooter() {
   const phoneHref = `tel:${CONTACT_DETAILS.phone.replace(/[^\d+]/g, "")}`;
 
   return (
-    <footer key={pathname} className="bg-canvas pb-3 text-ink md:pb-5">
+    // Desktop: exactly one screen tall at most content sizes, with a top band left clear for the fixed logo.
+    <footer
+      key={pathname}
+      className="flex flex-col bg-canvas pb-3 text-ink md:min-h-svh md:pb-5"
+    >
       {/* Right padding keeps everything clear of the fixed CONTACT label. */}
-      <div className="px-3 pt-16 pr-10 md:px-5 md:pt-24 md:pr-20">
-        <div>
-          <p className="font-logo-sub text-[0.625rem] leading-none tracking-[0.2em] text-ink/50 uppercase md:text-xs">
-            Inquire
-          </p>
-          <h2 className="mt-5 font-display text-[2.75rem] leading-[0.95] md:mt-6 md:text-7xl lg:text-8xl">
-            Let&rsquo;s tell
-            <br />
-            <em className="italic">your story.</em>
-          </h2>
-          <Link
-            href={ROUTES.CONTACT}
-            className="group mt-8 inline-flex items-center gap-3 border-b border-ink pb-2 font-logo text-sm font-bold tracking-[0.04em] uppercase md:mt-14 md:text-base"
-          >
-            Start your inquiry
-            <span
-              aria-hidden="true"
-              className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1.5"
-            >
-              &rarr;
-            </span>
-          </Link>
-        </div>
-
-        {/* Phones: contact full width, studio and follow side by side, explore as one wrapping row. */}
-        <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-8 md:mt-20 md:grid-cols-4 md:gap-y-10">
-          <div className="col-span-2 md:col-span-1">
-            <span className={LABEL}>Contact</span>
-            <a
-              href={`mailto:${CONTACT_DETAILS.email}`}
-              className={cn(VALUE, UNDERLINE, "break-all")}
-            >
-              {CONTACT_DETAILS.email}
-            </a>
-            <br />
-            <a href={phoneHref} className={cn(VALUE, UNDERLINE)}>
-              {CONTACT_DETAILS.phone}
-            </a>
-          </div>
-
-          <div>
-            <span className={LABEL}>Studio</span>
-            <p className={VALUE}>Based in {CONTACT_DETAILS.city}</p>
-            <p className="mt-1 font-display text-base leading-snug italic md:text-xl">
-              Available worldwide
+      <div className="px-3 pt-16 pr-10 md:flex md:flex-1 md:flex-col md:px-5 md:pt-28 md:pr-20">
+        <div className="md:mb-10 md:grid md:grid-cols-12 md:items-end md:gap-x-6">
+          <div className="md:col-span-5">
+            <p className="font-logo-sub text-[0.625rem] leading-none tracking-[0.2em] text-ink/50 uppercase md:text-xs">
+              Inquire
             </p>
+            <h2 className="mt-5 font-display text-[2.75rem] leading-[0.95] md:mt-6 md:text-[min(6vw,9svh)]">
+              Let&rsquo;s tell
+              <br />
+              <em className="italic">your story.</em>
+            </h2>
+            <Link
+              href={ROUTES.CONTACT}
+              className="group mt-8 inline-flex items-center gap-3 border-b border-ink pb-2 font-logo text-sm font-bold tracking-[0.04em] uppercase md:mt-10 md:text-base"
+            >
+              Start your inquiry
+              <span
+                aria-hidden="true"
+                className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1.5"
+              >
+                &rarr;
+              </span>
+            </Link>
           </div>
 
-          <div>
-            <span className={LABEL}>Follow</span>
-            <ul>
-              {SOCIAL_LINKS.map(({ name, href }) => (
-                <li key={name}>
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(VALUE, UNDERLINE)}
-                  >
-                    {name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Phones: contact full width, studio and follow side by side, explore as one wrapping row. Desktop: two pairs beside the invitation. */}
+          <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-8 md:col-span-7 md:mt-0 md:gap-y-10">
+            <div className="col-span-2 md:col-span-1">
+              <span className={LABEL}>Contact</span>
+              <a
+                href={`mailto:${CONTACT_DETAILS.email}`}
+                className={cn(VALUE, UNDERLINE, "break-all")}
+              >
+                {CONTACT_DETAILS.email}
+              </a>
+              <br />
+              <a href={phoneHref} className={cn(VALUE, UNDERLINE)}>
+                {CONTACT_DETAILS.phone}
+              </a>
+            </div>
 
-          <div className="col-span-2 md:col-span-1">
-            <span className={LABEL}>Explore</span>
-            <ul className="flex flex-wrap gap-x-5 gap-y-1 md:block">
-              {FOOTER_LINKS.map(({ label, href }) => (
-                <li key={href}>
-                  <Link href={href} className={cn(VALUE, UNDERLINE)}>
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div>
+              <span className={LABEL}>Studio</span>
+              <p className={VALUE}>Based in {CONTACT_DETAILS.city}</p>
+              <p className="mt-1 font-display text-base leading-snug italic md:text-xl">
+                Available worldwide
+              </p>
+            </div>
+
+            <div>
+              <span className={LABEL}>Follow</span>
+              <ul>
+                {SOCIAL_LINKS.map(({ name, href }) => (
+                  <li key={name}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(VALUE, UNDERLINE)}
+                    >
+                      {name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="col-span-2 md:col-span-1">
+              <span className={LABEL}>Explore</span>
+              <ul className="flex flex-wrap gap-x-5 gap-y-1 md:block">
+                {FOOTER_LINKS.map(({ label, href }) => (
+                  <li key={href}>
+                    <Link href={href} className={cn(VALUE, UNDERLINE)}>
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -168,7 +151,7 @@ export default function SiteFooter() {
           ref={bottomRef}
           className={cn(
             SMALL,
-            "mt-10 flex flex-col gap-5 border-t border-ink/10 pt-6 md:mt-12 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3",
+            "mt-10 flex flex-col gap-5 border-t border-ink/10 pt-6 md:mt-auto md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3",
           )}
         >
           {/* Phones stack these as rows; from md up the wrappers dissolve into one line. */}
@@ -214,25 +197,7 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      <p
-        ref={wordmarkRef}
-        aria-hidden="true"
-        className={cn(
-          WORDMARK_SIZE,
-          "mt-10 overflow-hidden pl-3 font-logo leading-none font-bold tracking-[-0.03em] whitespace-nowrap uppercase md:mt-14 md:pl-5",
-        )}
-      >
-        {Array.from(SITE_SHORT_NAME.toUpperCase()).map((letter, index) => (
-          <span
-            key={index}
-            data-footer-letter
-            className="inline-block pb-[0.08em]"
-            style={{ "--i": index } as React.CSSProperties}
-          >
-            {letter === " " ? "\u00a0" : letter}
-          </span>
-        ))}
-      </p>
+      <FooterWordmark />
     </footer>
   );
 }
