@@ -89,7 +89,7 @@ export default function SiteFooter() {
           <p className="font-logo-sub text-[0.625rem] leading-none tracking-[0.2em] text-ink/50 uppercase md:text-xs">
             Inquire
           </p>
-          <h2 className="mt-5 font-display text-[2.75rem] leading-[0.95] md:mt-8 md:text-8xl lg:text-9xl">
+          <h2 className="mt-5 font-display text-[2.75rem] leading-[0.95] md:mt-6 md:text-7xl lg:text-8xl">
             Let&rsquo;s tell
             <br />
             <em className="italic">your story.</em>
