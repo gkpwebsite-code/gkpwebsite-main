@@ -3,7 +3,7 @@
 
 /* Menu palette defaults (the original black and white); the menu's palette picker overrides these at runtime. */
 :root {
-  --menu-bg: #0a0a0a;
+  --menu-bg: #000000;
   --menu-text: #ffffff;
   --menu-accent: #ffffff;
 }
@@ -178,11 +178,18 @@ html[data-intro="done"] .intro-overlay {
   transition-delay: calc(var(--i) * 120ms + 450ms);
 }
 
+/* BACK and the image number slide in from the left edge, like MENU and CONTACT from the right. */
+[data-gallery-edge] {
+  transform: translateX(calc(-100% - 2.5rem));
+  transition: transform 1500ms cubic-bezier(0.16, 1, 0.3, 1) 700ms;
+}
+
 [data-entered] [data-gallery-cover] {
   clip-path: inset(0);
 }
 
 [data-entered] [data-gallery-cover] > *,
+[data-entered] [data-gallery-edge],
 [data-entered] [data-gallery-line],
 [data-entered] [data-gallery-fade] {
   opacity: 1;
@@ -199,13 +206,48 @@ html[data-intro="done"] .intro-overlay {
   opacity: 1;
 }
 
+/* Phones scroll the gallery vertically; each photo fades up from a gentle zoom as it arrives. */
+@media (max-width: 47.99rem) {
+  /* Every scroll settles with a screen or photo centred, like flicking through prints. */
+  html[data-gallery] {
+    scroll-snap-type: y mandatory;
+  }
+
+  [data-gallery-snap] {
+    scroll-snap-align: center;
+  }
+
+  [data-gallery-reveal] {
+    opacity: 0;
+    transition: opacity 700ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  [data-gallery-reveal] > img {
+    scale: 1.05;
+    transition:
+      scale 1300ms cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 700ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  [data-gallery-reveal][data-inview] {
+    opacity: 1;
+  }
+
+  [data-gallery-reveal][data-inview] > img {
+    scale: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-intro-logo],
   [data-gallery-cover],
   [data-gallery-cover] > *,
+  [data-gallery-edge],
   [data-gallery-line],
   [data-gallery-fade],
-  [data-gallery-photo] {
+  [data-gallery-photo],
+  [data-gallery-reveal],
+  [data-gallery-reveal] > img {
     transition: none !important;
   }
 }
@@ -216,6 +258,80 @@ html[data-intro="done"] .intro-overlay {
  */
 .page-enter {
   animation: page-enter 700ms cubic-bezier(0.33, 1, 0.68, 1) backwards;
+}
+
+/* Footer wordmark: letters rise one after another once it scrolls into view. */
+[data-footer-letter] {
+  transform: translateY(105%);
+  transition: transform 1100ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i) * 45ms);
+}
+
+[data-inview] [data-footer-letter] {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-footer-letter] {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* The corner * filter slips away while the footer wordmark fills the bottom of the screen. */
+[data-category-filter] {
+  transition:
+    opacity 500ms cubic-bezier(0.33, 1, 0.68, 1),
+    translate 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 500ms;
+}
+
+html[data-footer] [data-category-filter] {
+  opacity: 0;
+  translate: 0 2rem;
+  visibility: hidden;
+}
+
+/* Credit underline: sweeps out to the right, then redraws from the left. */
+@keyframes underline-sweep {
+  0% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+  50% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+  50.01% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/* "Scroll for more" bar: a line draws downward from the top, then is wiped away from the top, on repeat. */
+@keyframes scroll-cue {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+  45% {
+    clip-path: inset(0);
+  }
+  55% {
+    clip-path: inset(0);
+  }
+  100% {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-cue] {
+    animation: none !important;
+  }
 }
 
 @keyframes page-enter {

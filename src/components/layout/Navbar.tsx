@@ -8,10 +8,8 @@ import Logo from "@/components/common/Logo";
 import Menu, { PANEL_CLOSE_MS } from "@/components/layout/Menu";
 import { ROUTES } from "@/lib/constants";
 import { pauseScroll, resumeScroll } from "@/lib/lenis";
+import { SIDE_LABEL } from "@/lib/sideLabel";
 import { cn } from "@/lib/utils";
-
-const SIDE_LABEL =
-  "pointer-events-auto cursor-pointer font-logo text-xl leading-none font-bold tracking-[-0.02em] uppercase [writing-mode:vertical-rl] md:text-3xl lg:text-4xl";
 
 export default function Navbar() {
   const pathname = usePathname();

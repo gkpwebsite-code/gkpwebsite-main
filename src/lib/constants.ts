@@ -39,6 +39,26 @@ export const LEGAL_LINKS: readonly NavLink[] = [
   { label: "Terms & Conditions", href: ROUTES.TERMS },
 ];
 
+/** Footer page links. */
+export const FOOTER_LINKS: readonly NavLink[] = [
+  { label: "Portfolio", href: ROUTES.HOME },
+  { label: "About Us", href: ROUTES.ABOUT },
+  { label: "Testimonials", href: ROUTES.TESTIMONIALS },
+  { label: "FAQ", href: ROUTES.FAQ },
+];
+
+/** Email and phone are placeholders until the studio's real details are confirmed. */
+export const CONTACT_DETAILS = {
+  email: "hello@yourdomain.com",
+  phone: "+91 00000 00000",
+  city: "India",
+} as const;
+
+export const WEBSITE_CREDIT = {
+  name: "BYMOTIFSTUDIOS",
+  href: "https://www.instagram.com/bymotifstudios/",
+} as const;
+
 export type SocialLink = { name: string; href: string };
 
 export const SOCIAL_LINKS: readonly SocialLink[] = [
@@ -83,6 +103,8 @@ export type Gallery = {
   slug: string;
   title: string;
   subtitle: string;
+  venue: string;
+  city: string;
   cover: string;
   images: readonly GalleryImage[];
   categories: readonly CategoryId[];
@@ -112,7 +134,9 @@ export const GALLERIES: readonly Gallery[] = [
   {
     slug: "sharon-ishan",
     title: "Sharon & Ishan",
-    subtitle: "Wedding",
+    subtitle: "The Wedding of",
+    venue: "Venue Name",
+    city: "City",
     cover: `${COVERS}/sharonIshan.jpg`,
     images: galleryImages(
       "sharon-ishan",
@@ -158,7 +182,9 @@ export const GALLERIES: readonly Gallery[] = [
   {
     slug: "sofia-harshil",
     title: "Sofia & Harshil",
-    subtitle: "Wedding",
+    subtitle: "The Wedding of",
+    venue: "Venue Name",
+    city: "City",
     cover: `${COVERS}/SofiaHarshil.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -166,7 +192,9 @@ export const GALLERIES: readonly Gallery[] = [
   {
     slug: "sharanya-vinay",
     title: "Sharanya & Vinay",
-    subtitle: "Wedding",
+    subtitle: "The Wedding of",
+    venue: "Venue Name",
+    city: "City",
     cover: `${COVERS}/sharanyavinay.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -174,7 +202,9 @@ export const GALLERIES: readonly Gallery[] = [
   {
     slug: "nabeiha-zuber",
     title: "Nabeiha & Zuber",
-    subtitle: "Wedding",
+    subtitle: "The Wedding of",
+    venue: "Venue Name",
+    city: "City",
     cover: `${COVERS}/nabeihazuberwedding.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -182,7 +212,9 @@ export const GALLERIES: readonly Gallery[] = [
   {
     slug: "shivanee-rajat",
     title: "Shivanee & Rajat",
-    subtitle: "Wedding",
+    subtitle: "The Wedding of",
+    venue: "Venue Name",
+    city: "City",
     cover: `${COVERS}/shivaneerajat.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -190,7 +222,9 @@ export const GALLERIES: readonly Gallery[] = [
   {
     slug: "inayat-jasdeep",
     title: "Inayat & Jasdeep",
-    subtitle: "Wedding",
+    subtitle: "The Wedding of",
+    venue: "Venue Name",
+    city: "City",
     cover: `${COVERS}/inayatjasdeep.jpg`,
     images: [],
     categories: ["weddings", "couples"],

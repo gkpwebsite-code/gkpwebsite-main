@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import RollingWord from "@/components/common/RollingWord";
 import {
   LEGAL_LINKS,
   MENU_LINKS,
@@ -59,23 +60,6 @@ function Rise({
         {children}
       </div>
     </div>
-  );
-}
-
-/** Each letter rolls out and back in on hover, echoing the opening intro. */
-function RollingWord({ text }: { text: string }) {
-  return (
-    <span className="whitespace-nowrap" aria-hidden="true">
-      {Array.from(text).map((character, index) => (
-        <span
-          key={index}
-          className="inline-block group-hover:animate-[intro-letter-roll_900ms_both] group-focus-visible:animate-[intro-letter-roll_900ms_both]"
-          style={{ animationDelay: `${index * 25}ms` }}
-        >
-          {character === " " ? "\u00A0" : character}
-        </span>
-      ))}
-    </span>
   );
 }
 
@@ -206,7 +190,7 @@ export default function Menu({
             order={otherPages.length + 1}
             className="mt-16 md:mt-10"
           >
-            <ul className="flex justify-between font-logo-sub text-[0.625rem] leading-none tracking-[0.1em] text-menu-text/50 uppercase md:justify-start md:gap-x-6 md:text-sm md:tracking-[0.12em]">
+            <ul className="flex justify-between font-logo-sub text-[0.5625rem] leading-none tracking-[0.1em] text-menu-text/35 uppercase md:justify-start md:gap-x-6 md:text-[0.8125rem] md:tracking-[0.12em]">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link

@@ -4,6 +4,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Intro from "@/components/layout/Intro";
 import Navbar from "@/components/layout/Navbar";
 import PageTransition from "@/components/layout/PageTransition";
+import SiteFooter from "@/components/layout/SiteFooter";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import StructuredData from "@/components/seo/StructuredData";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="flex-1">
           <PageTransition>{children}</PageTransition>
         </main>
+        <SiteFooter />
         <Analytics />
         <SpeedInsights />
       </body>

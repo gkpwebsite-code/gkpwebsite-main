@@ -17,7 +17,7 @@ export const PALETTES: readonly Palette[] = [
   {
     id: "noir",
     name: "Noir (original)",
-    bg: "#0A0A0A",
+    bg: "#000000",
     text: "#FFFFFF",
     accent: "#FFFFFF",
   },

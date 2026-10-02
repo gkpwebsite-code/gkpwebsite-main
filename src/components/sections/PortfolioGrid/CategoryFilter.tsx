@@ -51,6 +51,7 @@ export default function CategoryFilter({
       />
       <div
         ref={rootRef}
+        data-category-filter
         className="pointer-events-none fixed bottom-0 left-0 z-50 flex flex-col items-start pb-8 pl-6 text-paper mix-blend-difference md:pb-12 md:pl-9"
       >
         <ul
