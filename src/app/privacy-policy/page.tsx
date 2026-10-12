@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import PlaceholderView from "@/components/pages/PlaceholderPage/PlaceholderView";
+import PrivacyView from "@/components/pages/LegalPage/PrivacyView";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
+  description:
+    "How Gautam Khullar Photography collects, uses and protects the details you share through this website.",
 };
 
 export default function Page() {
-  return <PlaceholderView title="Privacy Policy" />;
+  return <PrivacyView />;
 }

@@ -6,6 +6,33 @@
   --menu-bg: #000000;
   --menu-text: #ffffff;
   --menu-accent: #ffffff;
+  --footer-bg: #ffffff;
+  --footer-text: #0a0a0a;
+}
+
+/*
+ * Footer wordmark: photos show only through the letters. On light footers a white plate with black
+ * letters is screened over the photos, and the result multiplied onto the footer colour; dark
+ * footers flip it (black plate, white letters, multiply, then screen) so the ground stays exact.
+ */
+[data-wordmark] {
+  mix-blend-mode: multiply;
+}
+
+[data-wordmark-plate] {
+  background: #ffffff;
+  color: #000000;
+  mix-blend-mode: screen;
+}
+
+html[data-footer-tone="dark"] [data-wordmark] {
+  mix-blend-mode: screen;
+}
+
+html[data-footer-tone="dark"] [data-wordmark-plate] {
+  background: #000000;
+  color: #ffffff;
+  mix-blend-mode: multiply;
 }
 
 @layer base {
@@ -293,6 +320,63 @@ html[data-footer] [data-category-filter] {
 }
 
 /* Credit underline: sweeps out to the right, then redraws from the left. */
+/* Inquiry page: headline lines rise out of their masks once the intro reveals the page, or on arrival. */
+html:not([data-intro]) [data-inquire-line] {
+  transform: translateY(110%);
+}
+
+html[data-intro] [data-inquire-line] {
+  animation: inquire-line-rise 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 140ms + 200ms);
+}
+
+@keyframes inquire-line-rise {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes about-hero-settle {
+  from {
+    scale: 1.22;
+  }
+}
+
+@keyframes about-hero-nudge {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 0.3em;
+  }
+}
+
+@keyframes inquire-count {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes inquire-thanks-in {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-inquire-line] {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 @keyframes underline-sweep {
   0% {
     transform: scaleX(1);

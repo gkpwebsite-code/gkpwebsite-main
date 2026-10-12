@@ -8,6 +8,7 @@ import Logo from "@/components/common/Logo";
 import Menu, { PANEL_CLOSE_MS } from "@/components/layout/Menu";
 import { ROUTES } from "@/lib/constants";
 import { pauseScroll, resumeScroll } from "@/lib/lenis";
+import { GK_MASK, GK_SIZE } from "@/lib/monogram";
 import { SIDE_LABEL } from "@/lib/sideLabel";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,8 @@ export default function Navbar() {
   // Tied to the page it was opened on, so any navigation closes it.
   const [openOn, setOpenOn] = useState<string | null>(null);
   const open = openOn === pathname;
+  // These pages carry the interactive monogram of the portfolio grid instead.
+  const hasGridMenu = pathname === ROUTES.HOME || pathname === ROUTES.PORTFOLIO;
   const close = () => setOpenOn(null);
   const chromeTimer = useRef<number | undefined>(undefined);
 
@@ -64,7 +67,22 @@ export default function Navbar() {
       </header>
       <Menu id={menuId} open={open} pathname={pathname} onClose={close} />
       <footer className="pointer-events-none fixed inset-x-0 bottom-0 z-50 text-paper mix-blend-difference">
-        <Container className="flex max-w-none items-end justify-end px-3 pt-6 pb-8 md:px-5 md:pb-12">
+        <Container className="flex max-w-none items-end justify-between px-3 pt-6 pb-8 md:px-5 md:pb-12">
+          {hasGridMenu ? (
+            <span />
+          ) : (
+            <Link
+              href={ROUTES.PORTFOLIO}
+              aria-label="View the portfolio"
+              data-intro-from="bottom"
+              className="pointer-events-auto pl-2 transition-opacity duration-300 hover:opacity-60 md:pl-3"
+            >
+              <span
+                aria-hidden="true"
+                className={cn("block bg-current", GK_SIZE, GK_MASK)}
+              />
+            </Link>
+          )}
           <Link
             href={ROUTES.CONTACT}
             data-intro-from="right"

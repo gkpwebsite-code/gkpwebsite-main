@@ -22,6 +22,9 @@ export const colors = {
   "menu-bg": "var(--menu-bg)",
   "menu-text": "var(--menu-text)",
   "menu-accent": "var(--menu-accent)",
+  /** Footer colours; values come from the active footer palette in src/lib/palettes.ts */
+  "footer-bg": "var(--footer-bg)",
+  "footer-text": "var(--footer-text)",
 } as const;
 
 export type ColorName = keyof typeof colors;

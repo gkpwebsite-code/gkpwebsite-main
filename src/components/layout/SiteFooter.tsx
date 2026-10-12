@@ -2,35 +2,47 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CONTACT_DETAILS,
   FOOTER_LINKS,
   LEGAL_LINKS,
   ROUTES,
-  SITE_NAME,
   SOCIAL_LINKS,
   WEBSITE_CREDIT,
 } from "@/lib/constants";
 import RollingWord from "@/components/common/RollingWord";
+import FooterPalettePicker from "./FooterPalettePicker";
 import FooterWordmark from "./FooterWordmark";
 import { useLenis } from "@/lib/lenis";
 import { cn } from "@/lib/utils";
 
 const LABEL =
-  "mb-4 block font-logo-sub text-[0.625rem] leading-none tracking-[0.18em] text-ink/40 uppercase md:text-[0.6875rem]";
+  "mb-4 block font-logo-sub text-[0.625rem] leading-none tracking-[0.18em] text-footer-text/40 uppercase md:text-[0.6875rem]";
 const VALUE =
   "font-logo text-base leading-snug font-bold tracking-[-0.01em] md:text-lg";
 const UNDERLINE =
   "bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat transition-[background-size] duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]";
 const SMALL =
-  "font-logo-sub text-[0.6875rem] leading-none tracking-[0.1em] text-ink/45 uppercase md:text-[0.75rem] md:tracking-[0.12em]";
+  "font-logo-sub text-[0.6875rem] leading-none tracking-[0.1em] text-footer-text/45 uppercase md:text-[0.75rem] md:tracking-[0.12em]";
 
 /** Every page but a gallery ends with this; galleries close on their next-wedding panel. */
 export default function SiteFooter() {
   const pathname = usePathname();
+  const footerRef = useRef<HTMLElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(false);
   const lenis = useLenis();
+
+  useEffect(() => {
+    const footer = footerRef.current;
+    if (!footer) return;
+    const observer = new IntersectionObserver(([entry]) =>
+      setOnScreen(entry.isIntersecting),
+    );
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, [pathname]);
 
   // While the footer's bottom rows are on screen, the corner * filter steps aside for the wordmark.
   useEffect(() => {
@@ -55,20 +67,20 @@ export default function SiteFooter() {
     else window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const year = new Date().getFullYear();
   const phoneHref = `tel:${CONTACT_DETAILS.phone.replace(/[^\d+]/g, "")}`;
 
   return (
     // Desktop: exactly one screen tall at most content sizes, with a top band left clear for the fixed logo.
     <footer
+      ref={footerRef}
       key={pathname}
-      className="flex flex-col bg-canvas pb-3 text-ink md:min-h-svh md:pb-5"
+      className="flex flex-col bg-footer-bg pb-3 text-footer-text md:min-h-svh md:pb-5"
     >
       {/* Right padding keeps everything clear of the fixed CONTACT label. */}
       <div className="px-3 pt-16 pr-10 md:flex md:flex-1 md:flex-col md:px-5 md:pt-28 md:pr-20">
         <div className="md:mb-10 md:grid md:grid-cols-12 md:items-end md:gap-x-6">
           <div className="md:col-span-5">
-            <p className="font-logo-sub text-[0.625rem] leading-none tracking-[0.2em] text-ink/50 uppercase md:text-xs">
+            <p className="font-logo-sub text-[0.625rem] leading-none tracking-[0.2em] text-footer-text/50 uppercase md:text-xs">
               Inquire
             </p>
             <h2 className="mt-5 font-display text-[2.75rem] leading-[0.95] md:mt-6 md:text-[min(6vw,9svh)]">
@@ -76,18 +88,20 @@ export default function SiteFooter() {
               <br />
               <em className="italic">your story.</em>
             </h2>
-            <Link
-              href={ROUTES.CONTACT}
-              className="group mt-8 inline-flex items-center gap-3 border-b border-ink pb-2 font-logo text-sm font-bold tracking-[0.04em] uppercase md:mt-10 md:text-base"
-            >
-              Start your inquiry
-              <span
-                aria-hidden="true"
-                className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1.5"
+            {pathname !== ROUTES.CONTACT && (
+              <Link
+                href={ROUTES.CONTACT}
+                className="group mt-8 inline-flex items-center gap-3 border-b border-footer-text pb-2 font-logo text-sm font-bold tracking-[0.04em] uppercase md:mt-10 md:text-base"
               >
-                &rarr;
-              </span>
-            </Link>
+                Start your inquiry
+                <span
+                  aria-hidden="true"
+                  className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1.5"
+                >
+                  &rarr;
+                </span>
+              </Link>
+            )}
           </div>
 
           {/* Phones: contact full width, studio and follow side by side, explore as one wrapping row. Desktop: two pairs beside the invitation. */}
@@ -151,7 +165,7 @@ export default function SiteFooter() {
           ref={bottomRef}
           className={cn(
             SMALL,
-            "mt-10 flex flex-col gap-5 border-t border-ink/10 pt-6 md:mt-auto md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3",
+            "mt-10 flex flex-col gap-5 border-t border-footer-text/10 pt-6 md:mt-auto md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3",
           )}
         >
           {/* Phones stack these as rows; from md up the wrappers dissolve into one line. */}
@@ -160,15 +174,13 @@ export default function SiteFooter() {
               <Link
                 key={href}
                 href={href}
-                className="transition-colors duration-300 hover:text-ink"
+                className="transition-colors duration-300 hover:text-footer-text"
               >
                 {label}
               </Link>
             ))}
           </div>
-          <span>
-            &copy; {year} {SITE_NAME}
-          </span>
+          <span>&copy; {new Date().getFullYear()} All rights reserved</span>
           <div className="flex items-baseline justify-between gap-x-6 md:contents">
             <a
               href={WEBSITE_CREDIT.href}
@@ -179,7 +191,7 @@ export default function SiteFooter() {
             >
               <span aria-hidden="true">Website by</span>
               {/* On hover the letters roll and the underline sweeps out to the right, then redraws from the left. */}
-              <span className="relative inline-block pb-1 font-logo font-bold tracking-[0.02em] text-ink">
+              <span className="relative inline-block pb-1 font-logo font-bold tracking-[0.02em] text-footer-text">
                 <span className="block overflow-hidden py-[0.15em]">
                   <RollingWord text={WEBSITE_CREDIT.name} />
                 </span>
@@ -189,7 +201,7 @@ export default function SiteFooter() {
             <button
               type="button"
               onClick={backToTop}
-              className="cursor-pointer tracking-[inherit] uppercase transition-colors duration-300 hover:text-ink"
+              className="cursor-pointer tracking-[inherit] uppercase transition-colors duration-300 hover:text-footer-text"
             >
               Back to top &uarr;
             </button>
@@ -198,6 +210,7 @@ export default function SiteFooter() {
       </div>
 
       <FooterWordmark />
+      <FooterPalettePicker visible={onScreen} />
     </footer>
   );
 }

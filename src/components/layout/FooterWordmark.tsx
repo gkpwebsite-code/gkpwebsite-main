@@ -25,8 +25,8 @@ function pickCovers() {
 }
 
 /**
- * The studio name as a window onto the portfolio: black letters on a white plate are screen-blended
- * over the photos, so white stays white and the photos only show through the letters.
+ * The studio name as a window onto the portfolio: the photos only show through the letters, on
+ * whichever footer colour is active (blend rules under [data-wordmark] in globals.css).
  */
 export default function FooterWordmark() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -72,6 +72,7 @@ export default function FooterWordmark() {
     <div
       ref={rootRef}
       aria-hidden="true"
+      data-wordmark
       className="relative isolate mt-10 overflow-hidden md:mt-14"
     >
       {/* The outgoing photo stays opaque beneath the incoming one, so the letters never wash out mid-fade. */}
@@ -92,9 +93,10 @@ export default function FooterWordmark() {
         ))}
       </div>
       <p
+        data-wordmark-plate
         className={cn(
           WORDMARK_SIZE,
-          "relative overflow-hidden bg-canvas pl-3 font-logo leading-none font-bold tracking-[-0.03em] whitespace-nowrap text-black uppercase mix-blend-screen md:pl-5",
+          "relative overflow-hidden pl-3 font-logo leading-none font-bold tracking-[-0.03em] whitespace-nowrap uppercase md:pl-5",
         )}
       >
         {Array.from(SITE_SHORT_NAME.toUpperCase()).map((letter, index) => (

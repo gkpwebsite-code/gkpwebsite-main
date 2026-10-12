@@ -106,6 +106,10 @@ export type Gallery = {
   venue: string;
   city: string;
   cover: string;
+  /** Portraits the portfolio tile rotates through after the cover; defaults to the gallery's first few. */
+  rotation?: readonly string[];
+  /** Short portrait clip (4–6s) shown in the portfolio's films mode. */
+  clip?: string;
   images: readonly GalleryImage[];
   categories: readonly CategoryId[];
 };
@@ -290,6 +294,17 @@ export const GALLERIES: readonly Gallery[] = [
     categories: ["weddings", "couples"],
   },
 ];
+
+/** The cover first, then up to five portrait frames for the portfolio tile to rotate through. */
+export function coverFrames(gallery: Gallery): readonly string[] {
+  const rest =
+    gallery.rotation ??
+    gallery.images
+      .filter(({ width, height }) => height > width)
+      .slice(0, 5)
+      .map(({ src }) => src);
+  return [gallery.cover, ...rest];
+}
 
 export function galleryHref(slug: string) {
   return `${ROUTES.PORTFOLIO}/${slug}`;
