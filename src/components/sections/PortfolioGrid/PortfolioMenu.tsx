@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { GALLERIES } from "@/lib/constants";
+import type { Gallery } from "@/lib/constants";
 import { GK_MASK, GK_SIZE } from "@/lib/monogram";
 import { cn } from "@/lib/utils";
 import PlacesOverlay from "./PlacesOverlay";
@@ -12,21 +12,22 @@ import PlacesOverlay from "./PlacesOverlay";
  */
 export type PortfolioView = "grid" | "index";
 
-const HAS_FILMS = GALLERIES.some((gallery) => gallery.clip);
-
 export default function PortfolioMenu({
+  galleries,
   view,
   films,
   onShuffle,
   onToggleView,
   onToggleFilms,
 }: {
+  galleries: readonly Gallery[];
   view: PortfolioView;
   films: boolean;
   onShuffle: () => void;
   onToggleView: () => void;
   onToggleFilms: () => void;
 }) {
+  const hasFilms = galleries.some((gallery) => gallery.clips?.length);
   const [menuOpen, setMenuOpen] = useState(false);
   const [placesOpen, setPlacesOpen] = useState(false);
   const [spins, setSpins] = useState(0);
@@ -60,7 +61,7 @@ export default function PortfolioMenu({
       run: onToggleView,
     },
     // Films only appear once at least one couple has a clip.
-    ...(HAS_FILMS
+    ...(hasFilms
       ? [
           {
             label: films && view === "grid" ? "Photographs" : "Films",
@@ -86,7 +87,11 @@ export default function PortfolioMenu({
           menuOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
-      <PlacesOverlay open={placesOpen} onClose={closePlaces} />
+      <PlacesOverlay
+        galleries={galleries}
+        open={placesOpen}
+        onClose={closePlaces}
+      />
       <div
         ref={rootRef}
         data-category-filter

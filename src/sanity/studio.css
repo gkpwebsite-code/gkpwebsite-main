@@ -1,0 +1,49 @@
+/*
+ * Couple media arrays in Studio.
+ * Covers / clips: 2-up at a readable size.
+ * Gallery photographs: 5 across.
+ */
+.gkp-large-media-field[data-field="covers"],
+.gkp-large-media-field[data-field="clips"] {
+  max-width: 36rem;
+}
+
+.gkp-large-media-field[data-field="covers"] [data-ui="Grid"],
+.gkp-large-media-field[data-field="covers"] [data-ui="List"],
+.gkp-large-media-field[data-field="clips"] [data-ui="Grid"],
+.gkp-large-media-field[data-field="clips"] [data-ui="List"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.75rem !important;
+}
+
+.gkp-large-media-field[data-field="images"] [data-ui="Grid"],
+.gkp-large-media-field[data-field="images"] [data-ui="List"] {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0.5rem !important;
+}
+
+.gkp-large-media-field [data-ui="Card"] {
+  overflow: hidden;
+}
+
+.gkp-large-media-field [data-ui="Card"] img,
+.gkp-large-media-field [data-ui="Card"] video,
+.gkp-clip-preview video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  background: #111;
+}
+
+.gkp-large-media-field[data-field="covers"] [data-ui="Card"] img,
+.gkp-large-media-field[data-field="clips"] [data-ui="Card"] video,
+.gkp-large-media-field[data-field="clips"] .gkp-clip-preview video {
+  max-height: 260px;
+}
+
+.gkp-clip-preview {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+}

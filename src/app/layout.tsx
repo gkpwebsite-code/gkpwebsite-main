@@ -1,12 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import CookieConsent from "@/components/layout/CookieConsent";
-import Intro from "@/components/layout/Intro";
-import Navbar from "@/components/layout/Navbar";
-import PageTransition from "@/components/layout/PageTransition";
-import SiteFooter from "@/components/layout/SiteFooter";
-import SmoothScroll from "@/components/layout/SmoothScroll";
 import StructuredData from "@/components/seo/StructuredData";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
 import { fontVariables } from "@/lib/fonts";
@@ -31,7 +25,12 @@ export const viewport: Viewport = {
   themeColor: colors.canvas,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/** Shared shell only — site chrome lives in `(site)`, Studio stays clean. */
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
@@ -46,14 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <StructuredData />
-        <SmoothScroll />
-        <Intro />
-        <Navbar />
-        <main className="flex-1">
-          <PageTransition>{children}</PageTransition>
-        </main>
-        <SiteFooter />
-        <CookieConsent />
+        {children}
         <Analytics />
         <SpeedInsights />
       </body>

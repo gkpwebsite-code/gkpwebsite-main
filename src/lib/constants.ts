@@ -106,16 +106,25 @@ export type Gallery = {
   venue: string;
   city: string;
   cover: string;
-  /** Portraits the portfolio tile rotates through after the cover; defaults to the gallery's first few. */
+  /**
+   * 3–4 still covers for the portfolio tile. When omitted, uses `cover` plus portraits from
+   * `rotation` or the gallery. Shuffled with any clips on each page load.
+   */
+  covers?: readonly string[];
+  /** Extra portraits used when `covers` is not set; defaults to the gallery's first few. */
   rotation?: readonly string[];
-  /** Short portrait clip (4–6s) shown in the portfolio's films mode. */
-  clip?: string;
+  /**
+   * Optional short clips (only some couples have these). Mixed into the same cover rotation
+   * as the stills — never required, just another frame in the shuffle.
+   */
+  clips?: readonly string[];
   images: readonly GalleryImage[];
   categories: readonly CategoryId[];
 };
 
 const COVERS = "/images/cover-Portfolio-Images";
 const WEDDINGS = "/images/couples-wedding-folder";
+const CLIPS = "/videoClips";
 
 /** Builds a gallery's image list from filenames in its folder; all 2700×3600 unless listed as landscape. */
 function galleryImages(
@@ -142,6 +151,13 @@ export const GALLERIES: readonly Gallery[] = [
     venue: "Venue Name",
     city: "City",
     cover: `${COVERS}/sharonIshan.jpg`,
+    // Four strongest stills for the portfolio tile; full gallery keeps the rest.
+    covers: [
+      `${WEDDINGS}/sharon-ishan/24.jpg`,
+      `${WEDDINGS}/sharon-ishan/20.jpg`,
+      `${WEDDINGS}/sharon-ishan/3.jpg`,
+      `${WEDDINGS}/sharon-ishan/14.jpg`,
+    ],
     images: galleryImages(
       "sharon-ishan",
       [
@@ -190,6 +206,9 @@ export const GALLERIES: readonly Gallery[] = [
     venue: "Venue Name",
     city: "City",
     cover: `${COVERS}/SofiaHarshil.jpg`,
+    // Only one still cover until the gallery folder is filled; both clips are in the shuffle.
+    covers: [`${COVERS}/SofiaHarshil.jpg`],
+    clips: [`${CLIPS}/SofiyaHarshil.mp4`, `${CLIPS}/SofiyaHarshil2.mp4`],
     images: [],
     categories: ["weddings", "couples"],
   },
@@ -200,6 +219,7 @@ export const GALLERIES: readonly Gallery[] = [
     venue: "Venue Name",
     city: "City",
     cover: `${COVERS}/sharanyavinay.jpg`,
+    covers: [`${COVERS}/sharanyavinay.jpg`],
     images: [],
     categories: ["weddings", "couples"],
   },
@@ -210,6 +230,8 @@ export const GALLERIES: readonly Gallery[] = [
     venue: "Venue Name",
     city: "City",
     cover: `${COVERS}/nabeihazuberwedding.jpg`,
+    covers: [`${COVERS}/nabeihazuberwedding.jpg`],
+    clips: [`${CLIPS}/nahibaZuber.mp4`, `${CLIPS}/nahibaZuber2.mp4`],
     images: [],
     categories: ["weddings", "couples"],
   },
@@ -295,15 +317,39 @@ export const GALLERIES: readonly Gallery[] = [
   },
 ];
 
-/** The cover first, then up to five portrait frames for the portfolio tile to rotate through. */
-export function coverFrames(gallery: Gallery): readonly string[] {
-  const rest =
-    gallery.rotation ??
-    gallery.images
-      .filter(({ width, height }) => height > width)
-      .slice(0, 5)
-      .map(({ src }) => src);
-  return [gallery.cover, ...rest];
+export type CoverFrame =
+  { kind: "image"; src: string } | { kind: "video"; src: string };
+
+/** Up to four stills, plus any clips — the pool the tile shuffles through on each visit. */
+export function coverPool(gallery: Gallery): CoverFrame[] {
+  const stills = (
+    gallery.covers ?? [
+      gallery.cover,
+      ...(gallery.rotation ??
+        gallery.images
+          .filter(({ width, height }) => height > width)
+          .map(({ src }) => src)),
+    ]
+  )
+    .filter((src, index, list) => list.indexOf(src) === index)
+    .slice(0, 4);
+
+  return [
+    ...stills.map((src) => ({ kind: "image" as const, src })),
+    ...(gallery.clips ?? []).map((src) => ({ kind: "video" as const, src })),
+  ];
+}
+
+/** Fresh random order for this page load. Safe to call only in the browser. */
+export function shuffleCoverFrames(
+  frames: readonly CoverFrame[],
+): CoverFrame[] {
+  const next = [...frames];
+  for (let index = next.length - 1; index > 0; index--) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [next[index], next[swap]] = [next[swap], next[index]];
+  }
+  return next;
 }
 
 export function galleryHref(slug: string) {

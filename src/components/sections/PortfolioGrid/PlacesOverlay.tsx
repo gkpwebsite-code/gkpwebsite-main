@@ -3,33 +3,37 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { GALLERIES, galleryHref, type Gallery } from "@/lib/constants";
+import { galleryHref, type Gallery } from "@/lib/constants";
 import { pauseScroll, resumeScroll } from "@/lib/lenis";
 import { cn } from "@/lib/utils";
 import { placeOf } from "./places";
 
-/** Places in the order their first wedding appears in the portfolio. */
-const PLACES = GALLERIES.reduce<{ place: string; couples: Gallery[] }[]>(
-  (places, gallery) => {
-    const place = placeOf(gallery);
-    const existing = places.find((entry) => entry.place === place);
-    if (existing) existing.couples.push(gallery);
-    else places.push({ place, couples: [gallery] });
-    return places;
-  },
-  [],
-);
-
 const EASE = "ease-[cubic-bezier(0.76,0,0.24,1)]";
+
+function groupPlaces(galleries: readonly Gallery[]) {
+  return galleries.reduce<{ place: string; couples: Gallery[] }[]>(
+    (places, gallery) => {
+      const place = placeOf(gallery);
+      const existing = places.find((entry) => entry.place === place);
+      if (existing) existing.couples.push(gallery);
+      else places.push({ place, couples: [gallery] });
+      return places;
+    },
+    [],
+  );
+}
 
 /** Full-screen list of the places Gautam has photographed; hovering a place brings its wedding up behind the words. */
 export default function PlacesOverlay({
+  galleries,
   open,
   onClose,
 }: {
+  galleries: readonly Gallery[];
   open: boolean;
   onClose: () => void;
 }) {
+  const places = groupPlaces(galleries);
   const [active, setActive] = useState<string | null>(null);
   // Covers only load once the overlay has been opened.
   const [primed, setPrimed] = useState(false);
@@ -62,7 +66,7 @@ export default function PlacesOverlay({
     >
       {primed && (
         <div aria-hidden="true" className="absolute inset-0">
-          {GALLERIES.map((gallery) => (
+          {galleries.map((gallery) => (
             <Image
               key={gallery.slug}
               src={gallery.cover}
@@ -86,14 +90,14 @@ export default function PlacesOverlay({
         className="relative h-full overflow-y-auto overscroll-contain px-3 pt-32 pr-12 pb-48 md:px-[5vw] md:pt-40 md:pr-28"
       >
         <p className="font-logo-sub text-[0.6875rem] leading-none tracking-[0.14em] text-paper/50 uppercase md:text-xs">
-          Where we&rsquo;ve been &mdash; {PLACES.length} places
+          Where we&rsquo;ve been &mdash; {places.length} places
         </p>
 
         <ul
           className="group/list mt-10 md:mt-14"
           onMouseLeave={() => setActive(null)}
         >
-          {PLACES.map(({ place, couples }, index) => (
+          {places.map(({ place, couples }, index) => (
             <li
               key={place}
               onMouseEnter={() => setActive(couples[0].slug)}

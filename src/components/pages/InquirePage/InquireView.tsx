@@ -9,7 +9,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { sendInquiry } from "@/app/inquire/actions";
+import { sendInquiry } from "@/lib/inquiry-actions";
 import RollingWord from "@/components/common/RollingWord";
 import {
   CONTACT_DETAILS,

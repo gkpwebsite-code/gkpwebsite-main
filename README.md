@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gautam Khullar Photography
 
-## Getting Started
+Next.js site for Gautam Khullar Photography. Portfolio couples, covers, clips and gallery photos are managed in **Sanity**.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Sanity CMS
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Couples live in Sanity. Until a project id is set, the site falls back to the local galleries in `src/lib/constants.ts`.
 
-## Learn More
+### 1. Create a Sanity project
 
-To learn more about Next.js, take a look at the following resources:
+1. Go to [sanity.io/manage](https://www.sanity.io/manage) and create a project (or use an existing one).
+2. Copy the **Project ID**.
+3. Put it in `.env.local`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+NEXT_PUBLIC_SANITY_PROJECT_ID=yourProjectId
+NEXT_PUBLIC_SANITY_DATASET=production
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Restart `npm run dev`.
 
-## Deploy on Vercel
+### 2. Open the Studio
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[http://localhost:3000/studio](http://localhost:3000/studio)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Log in with your Sanity account. Add the localhost origin under **API → CORS origins** if the Studio asks for it (`http://localhost:3000`).
+
+### 3. Add a couple
+
+For each wedding create a **Couple** document:
+
+| Field                 | What to put                                 |
+| --------------------- | ------------------------------------------- |
+| Couple names          | e.g. `Sharon & Ishan`                       |
+| Slug                  | auto from the name                          |
+| City / place          | for “Where we’ve been”                      |
+| Order                 | lower = earlier in the grid                 |
+| Main cover            | one strong still (OG + index)               |
+| Portfolio tile covers | **3–4** best stills (shuffle on each visit) |
+| Film clips            | optional short MP4s (only some couples)     |
+| Gallery photographs   | full story, ~25–30 images                   |
+
+Publish the document. The homepage grid picks it up on the next load.
+
+Videos are optional. Couples with only stills work fine; clips are mixed into the same cover rotation when present.

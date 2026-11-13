@@ -9,12 +9,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import {
-  GALLERIES,
-  ROUTES,
-  type Gallery,
-  type GalleryImage,
-} from "@/lib/constants";
+import { ROUTES, type Gallery, type GalleryImage } from "@/lib/constants";
 import { allowHorizontalGestures, useLenis } from "@/lib/lenis";
 import { SIDE_LABEL } from "@/lib/sideLabel";
 import { cn } from "@/lib/utils";
@@ -61,7 +56,13 @@ function imageSizes({ width, height }: GalleryImage) {
     : "(min-width: 768px) 45vw, 100vw";
 }
 
-export default function GalleryView({ gallery }: { gallery: Gallery }) {
+export default function GalleryView({
+  gallery,
+  galleries,
+}: {
+  gallery: Gallery;
+  galleries: readonly Gallery[];
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -71,8 +72,8 @@ export default function GalleryView({ gallery }: { gallery: Gallery }) {
   const isDesktop = useIsDesktop();
   const [lightboxAt, setLightboxAt] = useState<number | null>(null);
   const [firstName, secondName] = gallery.title.split(" & ");
-  const position = GALLERIES.findIndex(({ slug }) => slug === gallery.slug);
-  const nextGallery = GALLERIES[(position + 1) % GALLERIES.length];
+  const position = galleries.findIndex(({ slug }) => slug === gallery.slug);
+  const nextGallery = galleries[(position + 1) % galleries.length];
 
   const closeLightbox = useCallback((index: number) => {
     setLightboxAt(null);
