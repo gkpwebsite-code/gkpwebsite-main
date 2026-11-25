@@ -47,10 +47,10 @@ export const FOOTER_LINKS: readonly NavLink[] = [
   { label: "FAQ", href: ROUTES.FAQ },
 ];
 
-/** Email and phone are placeholders until the studio's real details are confirmed. */
+/** Studio contact details shown in the footer and inquiry flow. */
 export const CONTACT_DETAILS = {
-  email: "hello@yourdomain.com",
-  phone: "+91 00000 00000",
+  email: "inquiries@gautamkhullarphotography.com",
+  phone: "+91 99109 97336",
   city: "India",
 } as const;
 
@@ -105,6 +105,11 @@ export type Gallery = {
   subtitle: string;
   venue: string;
   city: string;
+  /**
+   * Optional landscape still for desktop hover on “Where we’ve been”.
+   * Mobile overlay stays black (no hover).
+   */
+  placeBackground?: string;
   cover: string;
   /**
    * 3–4 still covers for the portfolio tile. When omitted, uses `cover` plus portraits from
@@ -149,7 +154,8 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Sharon & Ishan",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Jaipur",
+    placeBackground: `${WEDDINGS}/sharon-ishan/12.jpg`,
     cover: `${COVERS}/sharonIshan.jpg`,
     // Four strongest stills for the portfolio tile; full gallery keeps the rest.
     covers: [
@@ -204,7 +210,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Sofia & Harshil",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Lake Como",
     cover: `${COVERS}/SofiaHarshil.jpg`,
     // Only one still cover until the gallery folder is filled; both clips are in the shuffle.
     covers: [`${COVERS}/SofiaHarshil.jpg`],
@@ -217,7 +223,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Sharanya & Vinay",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Udaipur",
     cover: `${COVERS}/sharanyavinay.jpg`,
     covers: [`${COVERS}/sharanyavinay.jpg`],
     images: [],
@@ -228,7 +234,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Nabeiha & Zuber",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Jodhpur",
     cover: `${COVERS}/nabeihazuberwedding.jpg`,
     covers: [`${COVERS}/nabeihazuberwedding.jpg`],
     clips: [`${CLIPS}/nahibaZuber.mp4`, `${CLIPS}/nahibaZuber2.mp4`],
@@ -240,7 +246,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Shivanee & Rajat",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Goa",
     cover: `${COVERS}/shivaneerajat.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -250,7 +256,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Inayat & Jasdeep",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "New Delhi",
     cover: `${COVERS}/inayatjasdeep.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -260,7 +266,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Sanjana & Shrey",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Mussoorie",
     cover: `${COVERS}/sanjana-shrey.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -270,7 +276,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Sarika & Zach",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Tuscany",
     cover: `${COVERS}/sarika-zach.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -280,7 +286,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Hunar & Noor",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Jaipur",
     cover: `${COVERS}/hunar-noor.jpg`,
     images: [],
     categories: ["couples"],
@@ -290,7 +296,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Saachi & Jay",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "London",
     cover: `${COVERS}/saachi-jay.jpg`,
     images: [],
     categories: ["couples", "black-white"],
@@ -300,7 +306,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Nikita & Abhinav",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Udaipur",
     cover: `${COVERS}/nikita-abhinav.jpg`,
     images: [],
     categories: ["weddings", "couples"],
@@ -310,7 +316,7 @@ export const GALLERIES: readonly Gallery[] = [
     title: "Annushka & Karan",
     subtitle: "The Wedding of",
     venue: "Venue Name",
-    city: "City",
+    city: "Bali",
     cover: `${COVERS}/annushka-karan.jpg`,
     images: [],
     categories: ["weddings", "couples"],

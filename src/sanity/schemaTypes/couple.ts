@@ -1,4 +1,10 @@
-import { defineArrayMember, defineField, defineType } from "sanity";
+import { HeartIcon } from "@sanity/icons/Heart";
+import {
+  defineArrayMember,
+  defineField,
+  defineType,
+  type PreviewValue,
+} from "sanity";
 import { ClipPreview } from "../components/ClipPreview";
 import { LargeMediaField } from "../components/LargeMediaField";
 import { MediaArrayInput } from "../components/MediaArrayInput";
@@ -18,6 +24,7 @@ function shortName(filename?: string) {
 export const couple = defineType({
   name: "couple",
   title: "Couple",
+  icon: HeartIcon,
   type: "document",
   fields: [
     defineField({
@@ -50,6 +57,14 @@ export const couple = defineType({
       title: "City / place",
       type: "string",
       description: "Shown in “Where we’ve been”.",
+    }),
+    defineField({
+      name: "placeBackground",
+      title: "Places background",
+      type: "image",
+      description:
+        "One landscape still for desktop hover on “Where we’ve been”. Leave empty until you pick it. Mobile stays black (no hover).",
+      options: { hotspot: true },
     }),
     defineField({
       name: "order",
@@ -114,8 +129,11 @@ export const couple = defineType({
             prepare({ ref, filename }) {
               return {
                 title: shortName(filename),
-                // Pass the asset id through so ClipPreview can load a video thumb.
-                media: ref ? { _ref: ref } : undefined,
+                // Pass the asset id through so ClipPreview can load a video thumb. It isn't a
+                // normal media value, hence the cast; ClipPreview reads `_ref` back out.
+                media: (ref
+                  ? { _ref: ref }
+                  : undefined) as unknown as PreviewValue["media"],
               };
             },
           },

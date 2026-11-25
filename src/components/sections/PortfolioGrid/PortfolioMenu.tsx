@@ -7,30 +7,21 @@ import { cn } from "@/lib/utils";
 import PlacesOverlay from "./PlacesOverlay";
 
 /**
- * The GK monogram in the bottom-left corner: opens a short menu to browse the places Gautam
- * has photographed, or to shuffle the portfolio.
+ * The GK monogram in the bottom-left corner: opens a short menu for places and the text index.
  */
 export type PortfolioView = "grid" | "index";
 
 export default function PortfolioMenu({
   galleries,
   view,
-  films,
-  onShuffle,
   onToggleView,
-  onToggleFilms,
 }: {
   galleries: readonly Gallery[];
   view: PortfolioView;
-  films: boolean;
-  onShuffle: () => void;
   onToggleView: () => void;
-  onToggleFilms: () => void;
 }) {
-  const hasFilms = galleries.some((gallery) => gallery.clips?.length);
   const [menuOpen, setMenuOpen] = useState(false);
   const [placesOpen, setPlacesOpen] = useState(false);
-  const [spins, setSpins] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const closePlaces = useCallback(() => setPlacesOpen(false), []);
@@ -60,22 +51,6 @@ export default function PortfolioMenu({
       label: view === "grid" ? "Index" : "Gallery",
       run: onToggleView,
     },
-    // Films only appear once at least one couple has a clip.
-    ...(hasFilms
-      ? [
-          {
-            label: films && view === "grid" ? "Photographs" : "Films",
-            run: onToggleFilms,
-          },
-        ]
-      : []),
-    {
-      label: "Surprise me",
-      run: () => {
-        setSpins((count) => count + 1);
-        onShuffle();
-      },
-    },
   ];
 
   return (
@@ -83,8 +58,9 @@ export default function PortfolioMenu({
       <div
         aria-hidden="true"
         className={cn(
-          "fixed inset-0 z-40 bg-ink/60 backdrop-blur-md transition-opacity duration-700 ease-[cubic-bezier(0.33,1,0.68,1)]",
-          menuOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          // `invisible` once faded out, so the full-screen blur isn't re-rendered on every scroll frame.
+          "fixed inset-0 z-40 bg-ink/60 backdrop-blur-md transition-[opacity,visibility] duration-700 ease-[cubic-bezier(0.33,1,0.68,1)]",
+          menuOpen ? "opacity-100" : "pointer-events-none invisible opacity-0",
         )}
       />
       <PlacesOverlay
@@ -166,7 +142,6 @@ export default function PortfolioMenu({
               GK_MASK,
               (menuOpen || placesOpen) && "scale-[0.82]",
             )}
-            style={{ rotate: `${spins * 360}deg` }}
           />
         </button>
       </div>

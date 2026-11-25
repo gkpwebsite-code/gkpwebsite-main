@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Reveal from "@/components/common/Reveal";
-import { GALLERIES, galleryHref, ROUTES } from "@/lib/constants";
+import type { AboutPhotos } from "@/lib/about";
+import { ROUTES } from "@/lib/constants";
 import { useReveal } from "@/lib/useReveal";
 import { cn } from "@/lib/utils";
 import AboutHero from "./AboutHero";
@@ -20,28 +21,27 @@ const EASE_OUT = "ease-[cubic-bezier(0.16,1,0.3,1)]";
 /** Clears the fixed MENU and CONTACT labels on the right. */
 const GUTTER = "px-3 pr-12 md:px-[5vw] md:pr-28";
 
-const bySlug = (slug: string) => GALLERIES.find((g) => g.slug === slug)!;
-const reelFrame = (slug: string, position: string, src?: string): ReelFrame => {
-  const gallery = bySlug(slug);
-  return {
-    src: src ?? gallery.cover,
-    caption: gallery.title,
-    href: galleryHref(slug),
-    position,
-  };
-};
+/** When no full-screen photos are chosen in Sanity: this many random couples. */
+const RANDOM_REEL_SIZE = 4;
 
-/** The couples that open out full-screen after "Our approach". */
-const REEL = [
-  reelFrame(
-    "sharon-ishan",
-    "50% 45%",
-    "/images/couples-wedding-folder/sharon-ishan/24.jpg",
-  ),
-  reelFrame("sofia-harshil", "50% 20%"),
-  reelFrame("shivanee-rajat", "50% 58%"),
-  reelFrame("inayat-jasdeep", "50% 25%"),
-];
+function shuffle<T>(list: readonly T[]): T[] {
+  const next = [...list];
+  for (let i = next.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+}
+
+/** Four different couples, one random landscape photo from each. */
+function pickRandomReel(couples: AboutPhotos["couples"], random: boolean) {
+  const chosen = random ? shuffle(couples) : couples;
+  return chosen
+    .slice(0, RANDOM_REEL_SIZE)
+    .map((photos) =>
+      random ? photos[Math.floor(Math.random() * photos.length)] : photos[0],
+    );
+}
 
 const BIO = [
   "Gautam came to weddings through people, not cameras. He is most at home in the in-between moments: a father straightening a turban, a sister\u2019s laugh before the pheras, the hush that falls when the music stops.",
@@ -92,10 +92,25 @@ function Portrait() {
   );
 }
 
-export default function AboutView() {
+export default function AboutView({ photos }: { photos: AboutPhotos }) {
+  // Photos chosen in Sanity show as set, in order. Without them: a stable pick for the server
+  // render, then a fresh random four from four different couples once the browser takes over
+  // (well before anyone scrolls down to them).
+  const [reel, setReel] = useState<ReelFrame[]>(() =>
+    photos.reelChosen ? photos.reel : pickRandomReel(photos.couples, false),
+  );
+  useEffect(() => {
+    if (photos.reelChosen) return;
+    const id = window.setTimeout(
+      () => setReel(pickRandomReel(photos.couples, true)),
+      0,
+    );
+    return () => window.clearTimeout(id);
+  }, [photos.couples, photos.reelChosen]);
+
   return (
     <article className="bg-canvas text-ink">
-      <AboutHero />
+      <AboutHero frames={photos.hero} shuffled={!photos.heroChosen} />
 
       {/* The idea behind the studio, lit word by word as it passes. */}
       <section
@@ -150,7 +165,7 @@ export default function AboutView() {
         <LitStatement text="We don't direct your day. We watch it closely, wait for the light, and keep the moments you didn't know were happening." />
       </section>
 
-      <ExpandingImage frames={REEL} />
+      {reel.length > 0 && <ExpandingImage frames={reel} />}
 
       {/* Closing line and the way in. */}
       <section

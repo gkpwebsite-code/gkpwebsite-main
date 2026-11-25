@@ -11,12 +11,7 @@ import {
 } from "react";
 import { sendInquiry } from "@/lib/inquiry-actions";
 import RollingWord from "@/components/common/RollingWord";
-import {
-  CONTACT_DETAILS,
-  GALLERIES,
-  ROUTES,
-  SOCIAL_LINKS,
-} from "@/lib/constants";
+import { GALLERIES, ROUTES } from "@/lib/constants";
 import {
   INQUIRY_OPTIONS,
   validateInquiry,
@@ -24,12 +19,14 @@ import {
   type InquiryState,
 } from "@/lib/inquiry";
 import { pauseScroll, resumeScroll, useLenis } from "@/lib/lenis";
+import type { FaqEntry } from "@/lib/site-content";
 import { useReveal } from "@/lib/useReveal";
 import { cn } from "@/lib/utils";
 import InquireDates from "./InquireDates";
 import InquireFaq from "./InquireFaq";
 import { Field, FieldError, LEGEND, Pills, TextArea } from "./InquireFields";
 import InquirePhone from "./InquirePhone";
+import { useSiteSettings } from "@/components/layout/SiteSettingsProvider";
 
 /** The first six portfolio couples; the photo panel turns through them evenly down the page. */
 const COUPLES = GALLERIES.slice(0, 6);
@@ -265,13 +262,16 @@ function ThankYou({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function InquireView() {
+export default function InquireView({ faq }: { faq: readonly FaqEntry[] }) {
+  const contact = useSiteSettings();
   const [state, formAction, pending] = useActionState(sendInquiry, INITIAL);
   const [thanksClosed, setThanksClosed] = useState<InquiryState | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const phoneDigits = CONTACT_DETAILS.phone.replace(/[^\d]/g, "");
-  const instagram = SOCIAL_LINKS.find(({ name }) => name === "Instagram");
+  const phoneDigits = contact.phone.replace(/[^\d]/g, "");
+  const instagram = contact.socialLinks.find(
+    ({ name }) => name === "Instagram",
+  );
   const showThanks = state.status === "sent" && thanksClosed !== state;
   const [errors, setErrors] = useState<InquiryErrors>({});
   const hasErrors = Object.keys(errors).length > 0;
@@ -335,16 +335,16 @@ export default function InquireView() {
             <div className="col-span-2 sm:col-span-1">
               <span className={DETAIL_LABEL}>Email</span>
               <a
-                href={`mailto:${CONTACT_DETAILS.email}`}
+                href={`mailto:${contact.email}`}
                 className={cn(DETAIL_VALUE, "break-all")}
               >
-                {CONTACT_DETAILS.email}
+                {contact.email}
               </a>
             </div>
             <div className="col-span-2 sm:col-span-1">
               <span className={DETAIL_LABEL}>Phone</span>
               <a href={`tel:+${phoneDigits}`} className={DETAIL_VALUE}>
-                {CONTACT_DETAILS.phone}
+                {contact.phone}
               </a>
             </div>
             <div>
@@ -514,7 +514,7 @@ export default function InquireView() {
           </Chapter>
         </form>
 
-        <InquireFaq />
+        <InquireFaq questions={faq} />
       </div>
 
       {showThanks && <ThankYou onClose={() => setThanksClosed(state)} />}

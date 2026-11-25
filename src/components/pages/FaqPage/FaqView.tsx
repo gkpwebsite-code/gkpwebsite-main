@@ -2,10 +2,14 @@ import Link from "next/link";
 import { Question } from "@/components/pages/InquirePage/InquireFaq";
 import { LEGEND } from "@/components/pages/InquirePage/InquireFields";
 import { ROUTES } from "@/lib/constants";
-import { FAQ } from "@/lib/faq";
+import type { FaqEntry } from "@/lib/site-content";
 
 /** A short list of the questions couples ask most, each opening to its answer. */
-export default function FaqView() {
+export default function FaqView({
+  questions,
+}: {
+  questions: readonly FaqEntry[];
+}) {
   return (
     <article className="px-3 pt-32 pr-10 pb-24 md:px-[5vw] md:pt-40 md:pr-24 md:pb-32">
       <div className="grid gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-16">
@@ -21,7 +25,7 @@ export default function FaqView() {
 
         <div>
           <div className="border-t border-ink/15">
-            {FAQ.map((item) => (
+            {questions.map((item) => (
               <Question key={item.question} {...item} />
             ))}
           </div>

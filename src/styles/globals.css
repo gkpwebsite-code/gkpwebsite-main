@@ -305,17 +305,17 @@ html[data-intro="done"] .intro-overlay {
   }
 }
 
-/* The corner * filter slips away while the footer wordmark fills the bottom of the screen. */
-[data-category-filter] {
+/* The corner GK monogram fades out the moment the footer starts to come into view (and back on the way up). */
+[data-category-filter],
+[data-footer-hide] {
   transition:
-    opacity 500ms cubic-bezier(0.33, 1, 0.68, 1),
-    translate 700ms cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 500ms;
+    opacity 200ms cubic-bezier(0.33, 1, 0.68, 1),
+    visibility 200ms;
 }
 
-html[data-footer] [data-category-filter] {
+html[data-footer] [data-category-filter],
+html[data-footer] [data-footer-hide] {
   opacity: 0;
-  translate: 0 2rem;
   visibility: hidden;
 }
 
@@ -341,7 +341,7 @@ html[data-intro] [data-inquire-line] {
 
 @keyframes about-hero-settle {
   from {
-    scale: 1.22;
+    scale: 1.06;
   }
 }
 

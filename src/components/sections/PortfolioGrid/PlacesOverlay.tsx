@@ -64,24 +64,28 @@ export default function PlacesOverlay({
         EASE,
       )}
     >
+      {/* Desktop only — mobile stays black (no hover). Image is the couple’s Places background. */}
       {primed && (
-        <div aria-hidden="true" className="absolute inset-0">
-          {galleries.map((gallery) => (
-            <Image
-              key={gallery.slug}
-              src={gallery.cover}
-              alt=""
-              fill
-              quality={90}
-              sizes="100vw"
-              className={cn(
-                "object-cover brightness-[0.45] transition-[opacity,scale] duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-                active === gallery.slug
-                  ? "scale-100 opacity-100"
-                  : "scale-[1.06] opacity-0",
-              )}
-            />
-          ))}
+        <div aria-hidden="true" className="absolute inset-0 hidden md:block">
+          {galleries.map((gallery) => {
+            if (!gallery.placeBackground) return null;
+            return (
+              <Image
+                key={gallery.slug}
+                src={gallery.placeBackground}
+                alt=""
+                fill
+                quality={90}
+                sizes="100vw"
+                className={cn(
+                  "object-cover brightness-[0.45] transition-[opacity,scale] duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                  active === gallery.slug
+                    ? "scale-100 opacity-100"
+                    : "scale-[1.06] opacity-0",
+                )}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -100,7 +104,7 @@ export default function PlacesOverlay({
           {places.map(({ place, couples }, index) => (
             <li
               key={place}
-              onMouseEnter={() => setActive(couples[0].slug)}
+              onPointerEnter={() => setActive(couples[0].slug)}
               className={cn(
                 "border-t border-paper/15 py-4 transition-[opacity,translate] duration-700 md:py-5",
                 "pointer-fine:group-has-[li:hover]/list:opacity-35 pointer-fine:hover:!opacity-100",
@@ -128,7 +132,7 @@ export default function PlacesOverlay({
                       key={couple.slug}
                       href={galleryHref(couple.slug)}
                       onClick={onClose}
-                      onMouseEnter={() => setActive(couple.slug)}
+                      onPointerEnter={() => setActive(couple.slug)}
                       className="font-logo-sub text-[0.6875rem] tracking-[0.14em] text-paper/60 uppercase transition-colors hover:text-paper md:text-xs"
                     >
                       {couple.title}
