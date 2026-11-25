@@ -19,6 +19,7 @@ export type SanityCouple = {
   subtitle?: string | null;
   venue?: string | null;
   city?: string | null;
+  placeBackground?: SanityImage | null;
   order?: number | null;
   categories?: string[] | null;
   cover?: SanityImage | null;
@@ -64,6 +65,8 @@ export function mapCouple(doc: SanityCouple): Gallery | null {
   const cover = imageSrc(doc.cover, 2000);
   if (!cover) return null;
 
+  const placeBackground = imageSrc(doc.placeBackground, 2400) || undefined;
+
   const covers = (doc.covers ?? [])
     .map((image) => imageSrc(image, 1600))
     .filter((src): src is string => Boolean(src));
@@ -94,6 +97,7 @@ export function mapCouple(doc: SanityCouple): Gallery | null {
     subtitle: doc.subtitle || "The Wedding of",
     venue: doc.venue || "Venue Name",
     city: doc.city || "City",
+    placeBackground,
     cover,
     covers: covers.length > 0 ? covers : [cover],
     clips: clips.length > 0 ? clips : undefined,

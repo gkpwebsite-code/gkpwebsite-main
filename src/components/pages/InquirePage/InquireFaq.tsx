@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { ROUTES } from "@/lib/constants";
-import { FAQ, type FaqItem } from "@/lib/faq";
+import type { FaqEntry } from "@/lib/site-content";
 import { cn } from "@/lib/utils";
 import { LEGEND } from "./InquireFields";
 
 /** One question that opens to its answer. */
-export function Question({ question, answer }: FaqItem) {
+export function Question({ question, answer }: FaqEntry) {
   const [open, setOpen] = useState(false);
   const answerId = useId();
 
@@ -48,12 +48,16 @@ export function Question({ question, answer }: FaqItem) {
   );
 }
 
-export default function InquireFaq() {
+export default function InquireFaq({
+  questions,
+}: {
+  questions: readonly FaqEntry[];
+}) {
   return (
     <section className="mt-24 md:mt-32">
       <p className={LEGEND}>Before you write</p>
       <div className="mt-4 border-t border-ink/15">
-        {FAQ.slice(0, 4).map((item) => (
+        {questions.slice(0, 4).map((item) => (
           <Question key={item.question} {...item} />
         ))}
       </div>

@@ -1,19 +1,31 @@
 import Link from "next/link";
-import { CONTACT_DETAILS, ROUTES, SITE_NAME } from "@/lib/constants";
+import { ROUTES, SITE_NAME } from "@/lib/constants";
+import { getSiteSettings } from "@/lib/site-content";
+
+/** The studio email from Sanity (Contact & social links), as a mail link. */
+async function EmailLink() {
+  const { email } = await getSiteSettings();
+  return (
+    <a
+      href={`mailto:${email}`}
+      className="underline underline-offset-2 transition-colors hover:text-ink"
+    >
+      {email}
+    </a>
+  );
+}
+
+/** Where the studio is based, from Sanity. */
+async function BasedIn() {
+  return (await getSiteSettings()).basedIn;
+}
 
 const LAST_UPDATED = "12 October 2026";
 
 const LEGEND =
   "font-logo-sub text-[0.6875rem] leading-none tracking-[0.14em] text-ink/45 uppercase md:text-xs";
 
-const email = (
-  <a
-    href={`mailto:${CONTACT_DETAILS.email}`}
-    className="underline underline-offset-2 transition-colors hover:text-ink"
-  >
-    {CONTACT_DETAILS.email}
-  </a>
-);
+const email = <EmailLink />;
 
 const SECTIONS: { title: string; body: React.ReactNode }[] = [
   {
@@ -21,9 +33,9 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <p>
         {SITE_NAME} is a wedding photography and film studio led by Gautam
-        Khullar, based in {CONTACT_DETAILS.city}. This policy explains what
-        happens to the details you share with us through this website. For any
-        question about it, write to {email}.
+        Khullar, based in <BasedIn />. This policy explains what happens to the
+        details you share with us through this website. For any question about
+        it, write to {email}.
       </p>
     ),
   },

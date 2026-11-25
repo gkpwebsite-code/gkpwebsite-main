@@ -7,7 +7,9 @@ import { useCallback, useRef, useState } from "react";
 import {
   ArrayOfObjectsFunctions,
   useClient,
+  type ArrayInputFunctionsProps,
   type ArrayOfObjectsInputProps,
+  type ObjectItem,
   type ObjectSchemaType,
 } from "sanity";
 
@@ -15,9 +17,16 @@ function itemKey() {
   return crypto.randomUUID().replace(/-/g, "").slice(0, 12);
 }
 
+/** Upload caps per field, so “Upload multiple…” can't overfill a limited list. */
+const FIELD_LIMITS: Record<string, number> = {
+  covers: 4,
+  heroImages: 5,
+  reelImages: 5,
+};
+
 function fieldLimit(path: ArrayOfObjectsInputProps["path"]) {
   const leaf = path[path.length - 1];
-  return leaf === "covers" ? 4 : undefined;
+  return typeof leaf === "string" ? FIELD_LIMITS[leaf] : undefined;
 }
 
 /**
@@ -68,14 +77,17 @@ export function MediaArrayInput(props: ArrayOfObjectsInputProps) {
             file,
             { filename: file.name },
           );
-          props.onItemAppend({
+          // Built first, then passed: the item type only declares `_key`, but Sanity needs
+          // `_type` and the asset reference too.
+          const item = {
             _type: memberType.name,
             _key: itemKey(),
             asset: {
               _type: "reference",
               _ref: asset._id,
             },
-          });
+          };
+          props.onItemAppend(item);
           ok += 1;
         }
         toast.push({
@@ -106,7 +118,7 @@ export function MediaArrayInput(props: ArrayOfObjectsInputProps) {
   );
 
   return (
-    <Stack space={3}>
+    <Stack gap={3}>
       {/* Stable file input outside the array chrome so the ref never remounts. */}
       <input
         ref={inputRef}
@@ -128,7 +140,12 @@ export function MediaArrayInput(props: ArrayOfObjectsInputProps) {
       />
       {props.renderDefault({
         ...props,
-        arrayFunctions: (fnProps) => (
+        arrayFunctions: (
+          fnProps: ArrayInputFunctionsProps<
+            ObjectItem,
+            ArrayOfObjectsInputProps["schemaType"]
+          >,
+        ) => (
           <Flex gap={2} wrap="wrap" align="center">
             <ArrayOfObjectsFunctions {...fnProps} />
             {!props.readOnly && (

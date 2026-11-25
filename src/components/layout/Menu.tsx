@@ -2,15 +2,10 @@
 
 import Link from "next/link";
 import RollingWord from "@/components/common/RollingWord";
-import {
-  LEGAL_LINKS,
-  MENU_LINKS,
-  ROUTES,
-  SITE_NAME,
-  SOCIAL_LINKS,
-} from "@/lib/constants";
+import { LEGAL_LINKS, MENU_LINKS, ROUTES, SITE_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import PalettePicker from "./PalettePicker";
+import { useSiteSettings } from "./SiteSettingsProvider";
 
 /** Panel unveils top-down; its contents rise in once it is mostly drawn. */
 const PANEL_OPEN_MS = 900;
@@ -75,6 +70,7 @@ export default function Menu({
   onClose: () => void;
 }) {
   const tabIndex = open ? 0 : -1;
+  const { socialLinks } = useSiteSettings();
   // The page you're on is left out; /portfolio is the same grid as home.
   const currentPage = pathname === ROUTES.PORTFOLIO ? ROUTES.HOME : pathname;
   const otherPages = MENU_LINKS.filter((link) => link.href !== currentPage);
@@ -117,7 +113,7 @@ export default function Menu({
           </Rise>
           <Rise open={open} order={1} className="mt-4 md:mt-6">
             <ul className="flex justify-end gap-6 font-logo text-base leading-none font-bold tracking-[-0.01em] uppercase md:text-xl lg:text-2xl">
-              {SOCIAL_LINKS.map((social) => (
+              {socialLinks.map((social) => (
                 <li key={social.name}>
                   <a
                     href={social.href}

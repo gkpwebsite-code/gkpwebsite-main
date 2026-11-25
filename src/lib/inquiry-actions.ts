@@ -6,16 +6,9 @@ import {
   validateInquiry,
   type InquiryState,
 } from "@/lib/inquiry";
+import { buildInquiryEmailHtml } from "@/lib/inquiry-email";
 
 const MAX_LENGTH = 5000;
-
-function escapeHtml(text: string) {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
 
 function readField(formData: FormData, name: string) {
   return formData
@@ -62,13 +55,6 @@ export async function sendInquiry(
     };
   }
 
-  const rows = INQUIRY_FIELDS.filter(([name]) => values[name])
-    .map(
-      ([name, label]) =>
-        `<tr><td style="padding:6px 16px 6px 0;color:#8a8a8a;vertical-align:top;white-space:nowrap">${label}</td><td style="padding:6px 0;white-space:pre-wrap">${escapeHtml(values[name])}</td></tr>`,
-    )
-    .join("");
-
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -77,10 +63,13 @@ export async function sendInquiry(
     },
     body: JSON.stringify({
       from,
-      to,
+      to: to
+        .split(",")
+        .map((address) => address.trim())
+        .filter(Boolean),
       reply_to: values.email,
-      subject: `New inquiry: ${values.name}${values.dateFrom ? `, ${values.dateFrom}` : ""}`,
-      html: `<table style="font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#0a0a0a">${rows}</table>`,
+      subject: `New inquiry — ${values.name}${values.dateFrom ? ` · ${values.dateFrom}` : ""}`,
+      html: buildInquiryEmailHtml(values),
     }),
   });
 

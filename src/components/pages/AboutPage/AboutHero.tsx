@@ -2,38 +2,77 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { AboutFrame } from "@/lib/about";
 import { cn } from "@/lib/utils";
+import { fitClass, fitSizes } from "./frameFit";
 import { useScrollProgress } from "./useScrollProgress";
 
-/** Landscape photographs only: they fill a desktop screen without heavy cropping. */
-const FRAMES: readonly string[] = [
-  "/images/couples-wedding-folder/sharon-ishan/16.jpg",
-  "/images/couples-wedding-folder/sharon-ishan/12.jpg",
-];
 const HOLD_MS = 5000;
 
-/** A random frame other than the one showing. */
-function randomFrame(current: number) {
-  const offset = 1 + Math.floor(Math.random() * (FRAMES.length - 1));
-  return (current + offset) % FRAMES.length;
+function shuffle<T>(list: readonly T[]): T[] {
+  const next = [...list];
+  for (let i = next.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
 }
 
 /**
- * Full-screen opening with the page title set large over it. Behind it, couples crossfade in
- * a random order. As the page scrolls, the photographs sink slowly behind
- * the title, which lifts and fades away.
+ * Full-screen opening with the page title set large over it. Behind it, photographs
+ * crossfade: the ones chosen in Sanity in their set order, or random landscapes from the
+ * couples. As the page scrolls, the photographs sink slowly behind the title, which lifts
+ * and fades away.
  */
-export default function AboutHero() {
+export default function AboutHero({
+  frames,
+  shuffled,
+}: {
+  frames: readonly AboutFrame[];
+  /** Random order per visit (fallback photos) rather than the order set in Sanity. */
+  shuffled: boolean;
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
-  const [current, setCurrent] = useState(0);
+  // Order is settled in the browser (random for fallback photos); the first photo then fades
+  // in over the dark ground instead of swapping out a server-rendered one.
+  const [order, setOrder] = useState<readonly AboutFrame[]>([]);
+  const [step, setStep] = useState(0);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (FRAMES.length < 2) return;
-    const timer = setTimeout(() => setCurrent(randomFrame(current)), HOLD_MS);
+    let frame = 0;
+    const id = window.setTimeout(() => {
+      setOrder(shuffled ? shuffle(frames) : frames);
+      setStep(0);
+      // Two frames later, so the first photo mounts hidden and then transitions in.
+      frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => setReady(true));
+      });
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      cancelAnimationFrame(frame);
+    };
+  }, [frames, shuffled]);
+
+  useEffect(() => {
+    if (order.length < 2) return;
+    const timer = setTimeout(() => setStep((current) => current + 1), HOLD_MS);
     return () => clearTimeout(timer);
-  }, [current]);
+  }, [step, order]);
+
+  // Only the photo showing, the one fading out beneath it and the next one (preloading).
+  const at = (offset: number): AboutFrame | undefined =>
+    order.length
+      ? order[(step + offset + order.length) % order.length]
+      : undefined;
+  const current = at(0);
+  const mounted = [step > 0 ? at(-1) : undefined, current, at(1)].filter(
+    (frame, index, list): frame is AboutFrame =>
+      Boolean(frame) && list.indexOf(frame) === index,
+  );
 
   const onProgress = useCallback(() => {
     const section = sectionRef.current;
@@ -58,24 +97,26 @@ export default function AboutHero() {
         ref={imageRef}
         className="absolute inset-0 will-change-transform motion-safe:animate-[about-hero-settle_2400ms_cubic-bezier(0.16,1,0.3,1)_both]"
       >
-        {FRAMES.map((frame, index) => (
+        {mounted.map((frame) => (
           <div
-            key={frame}
+            key={frame.src}
             className={cn(
+              // A gentle drift from 104% to true size, never enlarged past its resolution.
               "absolute inset-0 transition-[opacity,scale] ease-[cubic-bezier(0.16,1,0.3,1)]",
-              index === current
-                ? "z-20 scale-[1.08] opacity-100 duration-[1800ms,7000ms]"
-                : "z-10 scale-[1.16] opacity-0 delay-[1800ms] duration-0",
+              ready && frame === current
+                ? "z-20 scale-100 opacity-100 duration-[1800ms,7000ms]"
+                : "z-10 scale-[1.04] opacity-0 delay-[1800ms] duration-0",
             )}
           >
             <Image
-              src={frame}
-              alt={index === current ? "A couple on their wedding day" : ""}
+              src={frame.src}
+              alt={frame === current ? "A couple on their wedding day" : ""}
               fill
-              preload={index === 0}
+              loading={frame === current ? "eager" : "lazy"}
               quality={90}
-              sizes="100vw"
-              className="object-cover"
+              sizes={fitSizes(frame)}
+              className={fitClass(frame)}
+              style={{ objectPosition: frame.position }}
             />
           </div>
         ))}

@@ -11,7 +11,8 @@
     "prepare": "husky",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "seed:couples": "node scripts/seed-couples.mjs"
+    "seed:couples": "node scripts/seed-couples.mjs",
+    "seed:content": "node scripts/seed-site-content.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

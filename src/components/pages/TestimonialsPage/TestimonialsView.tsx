@@ -6,12 +6,8 @@ import { useCallback, useRef } from "react";
 import Reveal from "@/components/common/Reveal";
 import LitStatement from "@/components/pages/AboutPage/LitStatement";
 import { useScrollProgress } from "@/components/pages/AboutPage/useScrollProgress";
-import { galleryHref, getGallery, ROUTES } from "@/lib/constants";
-import {
-  FEATURED_QUOTE,
-  TESTIMONIALS,
-  type Testimonial,
-} from "@/lib/testimonials";
+import { ROUTES } from "@/lib/constants";
+import type { TestimonialEntry, TestimonialsContent } from "@/lib/site-content";
 import { useReveal } from "@/lib/useReveal";
 import { cn } from "@/lib/utils";
 
@@ -72,11 +68,9 @@ function Chapter({
   testimonial,
   index,
 }: {
-  testimonial: Testimonial;
+  testimonial: TestimonialEntry;
   index: number;
 }) {
-  const gallery = getGallery(testimonial.slug);
-  if (!gallery) return null;
   const flipped = index % 2 === 1;
 
   return (
@@ -87,7 +81,7 @@ function Chapter({
           flipped ? "md:col-start-8" : "md:col-start-1",
         )}
       >
-        <Photograph src={gallery.cover} alt={gallery.title} />
+        <Photograph src={testimonial.photo} alt={testimonial.name} />
       </div>
 
       <div
@@ -116,10 +110,10 @@ function Chapter({
           className="mt-10 flex flex-wrap items-baseline gap-x-8 gap-y-3"
         >
           <p className="font-logo text-base leading-none font-bold tracking-[-0.01em] uppercase md:text-lg">
-            {gallery.title}
+            {testimonial.name}
           </p>
           <Link
-            href={galleryHref(gallery.slug)}
+            href={testimonial.href}
             className="group inline-flex items-center gap-2 font-logo-sub text-[0.6875rem] tracking-[0.14em] text-ink/55 uppercase transition-colors hover:text-ink md:text-xs"
           >
             View their story
@@ -136,7 +130,11 @@ function Chapter({
   );
 }
 
-export default function TestimonialsView() {
+export default function TestimonialsView({
+  content,
+}: {
+  content: TestimonialsContent;
+}) {
   return (
     <article className="bg-canvas text-ink">
       <header className={cn(GUTTER, "pt-32 md:pt-40")}>
@@ -158,14 +156,14 @@ export default function TestimonialsView() {
       <section className={cn(GUTTER, "py-20 text-center md:py-[16svh]")}>
         <LitStatement
           className="mx-auto max-w-[22ch] text-[8.5vw] leading-[1.12] tracking-[-0.01em] text-balance md:max-w-[24ch] md:text-[4.2vw]"
-          text={`\u201C${FEATURED_QUOTE}\u201D`}
+          text={`\u201C${content.featuredQuote}\u201D`}
         />
       </section>
 
       <ol className={GUTTER}>
-        {TESTIMONIALS.map((testimonial, index) => (
+        {content.testimonials.map((testimonial, index) => (
           <Chapter
-            key={testimonial.slug}
+            key={testimonial.href}
             testimonial={testimonial}
             index={index}
           />

@@ -11,6 +11,7 @@ import {
   type Gallery,
 } from "@/lib/constants";
 import { useLenis } from "@/lib/lenis";
+import { useIdleAutoScroll } from "@/lib/useIdleAutoScroll";
 import { EASE } from "@/lib/theme";
 import { useReveal } from "@/lib/useReveal";
 import { cn } from "@/lib/utils";
@@ -42,31 +43,14 @@ const frameClass = (active: boolean, previous: boolean) =>
   );
 
 /**
- * Up to three still covers, plus any clips, shuffled into a fresh order on every page load.
- * Videos are optional — just another frame in the mix. Films mode shows only the clips.
+ * Up to four still covers, plus any clips, shuffled into a fresh order on every page load.
+ * Videos are optional — just another frame in the mix when a couple has them.
  */
-function TileMedia({
-  gallery,
-  index,
-  films,
-}: {
-  gallery: Gallery;
-  index: number;
-  films: boolean;
-}) {
-  const pool = useMemo(
-    () =>
-      films
-        ? (gallery.clips ?? []).map((src) => ({
-            kind: "video" as const,
-            src,
-          }))
-        : coverPool(gallery),
-    [films, gallery],
-  );
+function TileMedia({ gallery, index }: { gallery: Gallery; index: number }) {
+  const pool = useMemo(() => coverPool(gallery), [gallery]);
   // Stable first paint (still cover); shuffled once the browser takes over.
   const [frames, setFrames] = useState<readonly CoverFrame[]>(() =>
-    films ? pool : pool.filter((frame) => frame.kind === "image").slice(0, 1),
+    pool.filter((frame) => frame.kind === "image").slice(0, 1),
   );
   const rootRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
@@ -77,10 +61,9 @@ function TileMedia({
 
   useEffect(() => {
     loaded.current = new Set();
-    let ordered =
-      films || pool.length < 2 ? [...pool] : shuffleCoverFrames(pool);
+    let ordered = pool.length < 2 ? [...pool] : shuffleCoverFrames(pool);
     // Keep the painted cover as frame 0 so the intro rise never remounts mid-animation.
-    if (!films && ordered.length > 1) {
+    if (ordered.length > 1) {
       const coverIndex = ordered.findIndex(
         (frame) => frame.kind === "image" && frame.src === gallery.cover,
       );
@@ -94,37 +77,59 @@ function TileMedia({
       setTurn({ shown: 0, previous: -1, reach: 0 });
     }, 0);
     return () => window.clearTimeout(id);
-  }, [films, gallery.cover, gallery.slug, pool]);
+  }, [gallery.cover, gallery.slug, pool]);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root || frames.length < 2) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let onScreen = false;
+    let started = false;
     let timer = 0;
-    const observer = new IntersectionObserver(([entry]) => {
-      onScreen = entry.isIntersecting;
-    });
-    observer.observe(root);
     let shown = 0;
     let reach = 0;
-    const tick = () => {
+    const holdFor = () =>
+      frames[shown].kind === "video" ? VIDEO_HOLD_MS : HOLD_MS;
+
+    /** Moves to the next frame if it has arrived (never fades in a blank); says whether it did. */
+    const advance = () => {
       const next = (shown + 1) % frames.length;
-      // Waits for the next frame to arrive rather than fading in a blank.
-      if (!onScreen || document.hidden || !loaded.current.has(next)) {
-        timer = window.setTimeout(tick, 700);
-        return;
-      }
+      if (!loaded.current.has(next)) return false;
       reach = Math.max(reach, next);
       setTurn({ shown: next, previous: shown, reach });
       shown = next;
-      const hold = frames[shown].kind === "video" ? VIDEO_HOLD_MS : HOLD_MS;
-      timer = window.setTimeout(tick, hold);
+      return true;
     };
-    timer = window.setTimeout(
-      tick,
-      HOLD_MS + ((index % COLUMNS) + Math.floor(index / COLUMNS)) * STAGGER_MS,
-    );
+
+    const tick = () => {
+      if (!onScreen) return;
+      if (document.hidden || !advance()) {
+        timer = window.setTimeout(tick, 700);
+        return;
+      }
+      timer = window.setTimeout(tick, holdFor());
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      const wasOnScreen = onScreen;
+      onScreen = entry.isIntersecting;
+      if (onScreen === wasOnScreen) return;
+      window.clearTimeout(timer);
+      if (onScreen) {
+        // Back in view: hold this frame its full time. The very first turn is staggered
+        // so neighbouring tiles never change together.
+        const wait = started
+          ? holdFor()
+          : HOLD_MS +
+            ((index % COLUMNS) + Math.floor(index / COLUMNS)) * STAGGER_MS;
+        started = true;
+        timer = window.setTimeout(tick, wait);
+      } else {
+        // Out of view: quietly turn to the next frame, so scrolling back shows something new.
+        advance();
+      }
+    });
+    observer.observe(root);
     return () => {
       observer.disconnect();
       window.clearTimeout(timer);
@@ -145,21 +150,6 @@ function TileMedia({
 
   // Only the frames shown so far plus the next one are mounted, so media loads one at a time.
   const mounted = frames.slice(0, Math.min(frames.length, turn.reach + 2));
-
-  if (films && frames.length === 0) {
-    return (
-      <div className="absolute inset-0">
-        <Image
-          src={gallery.cover}
-          alt={gallery.title}
-          fill
-          quality={90}
-          sizes={SIZES}
-          className="object-cover"
-        />
-      </div>
-    );
-  }
 
   return (
     <div ref={rootRef} className="absolute inset-0">
@@ -212,11 +202,9 @@ function TileMedia({
 function PortfolioTile({
   gallery,
   index,
-  films,
 }: {
   gallery: Gallery;
   index: number;
-  films: boolean;
 }) {
   const [ref, visible] = useReveal<HTMLAnchorElement>(0, "0px 0px 15% 0px");
   const delay = (index % COLUMNS) * 120;
@@ -237,12 +225,7 @@ function PortfolioTile({
         className="absolute inset-0"
         style={{ "--i": index } as React.CSSProperties}
       >
-        <TileMedia
-          key={`${gallery.slug}-${films ? "films" : "photos"}`}
-          gallery={gallery}
-          index={index}
-          films={films}
-        />
+        <TileMedia gallery={gallery} index={index} />
       </div>
       <p
         aria-hidden="true"
@@ -254,15 +237,27 @@ function PortfolioTile({
   );
 }
 
-/** A fresh order that never matches the current one. */
-function reshuffle(current: readonly Gallery[]) {
-  const next = [...current];
-  do {
-    for (let i = next.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [next[i], next[j]] = [next[j], next[i]];
-    }
-  } while (next.length > 1 && next.every((g, i) => g === current[i]));
+/** This visit's couple order and grid/index choice; a full reload starts a fresh visit. */
+let visitOrder: readonly string[] | null = null;
+let visitView: PortfolioView = "grid";
+
+/** Puts galleries in the remembered order; any couple added since goes at the end. */
+function applyOrder(list: readonly Gallery[], order: readonly string[]) {
+  const rank = new Map(order.map((slug, i) => [slug, i]));
+  return [...list].sort(
+    (a, b) =>
+      (rank.get(a.slug) ?? Number.MAX_SAFE_INTEGER) -
+      (rank.get(b.slug) ?? Number.MAX_SAFE_INTEGER),
+  );
+}
+
+/** Fresh random couple order for this page load. */
+function shuffleGalleries(list: readonly Gallery[]) {
+  const next = [...list];
+  for (let i = next.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
   return next;
 }
 
@@ -271,12 +266,30 @@ export default function PortfolioGrid({
 }: {
   galleries: readonly Gallery[];
 }) {
-  const [galleries, setGalleries] = useState(initial);
-  const [view, setView] = useState<PortfolioView>("grid");
-  const [films, setFilms] = useState(false);
+  // First load: CMS order for the first paint (matches SSR), shuffled once the browser takes over.
+  // Coming back to the page in the same visit: the order the visitor already saw, so Back
+  // lands on the same couples it left.
+  const [galleries, setGalleries] = useState(() =>
+    visitOrder ? applyOrder(initial, visitOrder) : initial,
+  );
+  const [view, setView] = useState<PortfolioView>(() => visitView);
+  useEffect(() => {
+    visitView = view;
+  }, [view]);
   const [swapping, setSwapping] = useState(false);
   const swapTimer = useRef<number | undefined>(undefined);
   const lenis = useLenis();
+  useIdleAutoScroll(view === "grid" && !swapping && galleries.length > 0);
+
+  useEffect(() => {
+    if (visitOrder || initial.length < 2) return;
+    const id = window.setTimeout(() => {
+      const shuffled = shuffleGalleries(initial);
+      visitOrder = shuffled.map((gallery) => gallery.slug);
+      setGalleries(shuffled);
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [initial]);
 
   useEffect(() => () => window.clearTimeout(swapTimer.current), []);
 
@@ -311,7 +324,6 @@ export default function PortfolioGrid({
                 key={gallery.slug}
                 gallery={gallery}
                 index={index}
-                films={films}
               />
             ))}
           </div>
@@ -324,21 +336,11 @@ export default function PortfolioGrid({
       <PortfolioMenu
         galleries={galleries}
         view={view}
-        films={films}
-        onShuffle={() => swap(() => setGalleries(reshuffle))}
         onToggleView={() =>
           swap(() =>
             setView((current) => (current === "grid" ? "index" : "grid")),
           )
         }
-        onToggleFilms={() => {
-          if (view === "index") {
-            swap(() => {
-              setView("grid");
-              setFilms(true);
-            });
-          } else setFilms((current) => !current);
-        }}
       />
     </section>
   );

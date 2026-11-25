@@ -71,17 +71,20 @@ export default function Navbar() {
           {hasGridMenu ? (
             <span />
           ) : (
-            <Link
-              href={ROUTES.PORTFOLIO}
-              aria-label="View the portfolio"
-              data-intro-from="bottom"
-              className="pointer-events-auto pl-2 transition-opacity duration-300 hover:opacity-60 md:pl-3"
-            >
-              <span
-                aria-hidden="true"
-                className={cn("block bg-current", GK_SIZE, GK_MASK)}
-              />
-            </Link>
+            // Steps aside once the footer comes into view, like the portfolio's own monogram.
+            <span data-footer-hide className="flex">
+              <Link
+                href={ROUTES.PORTFOLIO}
+                aria-label="View the portfolio"
+                data-intro-from="bottom"
+                className="pointer-events-auto pl-2 transition-opacity duration-300 hover:opacity-60 md:pl-3"
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn("block bg-current", GK_SIZE, GK_MASK)}
+                />
+              </Link>
+            </span>
           )}
           <Link
             href={ROUTES.CONTACT}

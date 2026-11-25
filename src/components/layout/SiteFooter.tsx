@@ -4,17 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
-  CONTACT_DETAILS,
   FOOTER_LINKS,
   LEGAL_LINKS,
   ROUTES,
-  SOCIAL_LINKS,
   WEBSITE_CREDIT,
 } from "@/lib/constants";
 import RollingWord from "@/components/common/RollingWord";
 import FooterPalettePicker from "./FooterPalettePicker";
 import FooterWordmark from "./FooterWordmark";
 import { useLenis } from "@/lib/lenis";
+import { phoneHref } from "@/lib/site-settings";
+import { useSiteSettings } from "./SiteSettingsProvider";
 import { cn } from "@/lib/utils";
 
 const LABEL =
@@ -30,9 +30,9 @@ const SMALL =
 export default function SiteFooter() {
   const pathname = usePathname();
   const footerRef = useRef<HTMLElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const [onScreen, setOnScreen] = useState(false);
   const lenis = useLenis();
+  const contact = useSiteSettings();
 
   useEffect(() => {
     const footer = footerRef.current;
@@ -44,16 +44,21 @@ export default function SiteFooter() {
     return () => observer.disconnect();
   }, [pathname]);
 
-  // While the footer's bottom rows are on screen, the corner * filter steps aside for the wordmark.
+  // The moment the footer's top edge comes up into view, the corner GK monogram fades away.
   useEffect(() => {
-    const bottom = bottomRef.current;
-    if (!bottom) return;
+    const footer = footerRef.current;
+    if (!footer) return;
     const root = document.documentElement;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) root.dataset.footer = "";
-      else delete root.dataset.footer;
-    });
-    observer.observe(bottom);
+    // The -2px margin ignores a footer that only touches the bottom edge (short pages like the
+    // 404 end exactly one screen tall), which the browser would otherwise count as visible.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) root.dataset.footer = "";
+        else delete root.dataset.footer;
+      },
+      { rootMargin: "0px 0px -2px 0px" },
+    );
+    observer.observe(footer);
     return () => {
       observer.disconnect();
       delete root.dataset.footer;
@@ -66,8 +71,6 @@ export default function SiteFooter() {
     if (lenis) lenis.scrollTo(0, { duration: 1.6 });
     else window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const phoneHref = `tel:${CONTACT_DETAILS.phone.replace(/[^\d+]/g, "")}`;
 
   return (
     // Desktop: exactly one screen tall at most content sizes, with a top band left clear for the fixed logo.
@@ -109,29 +112,32 @@ export default function SiteFooter() {
             <div className="col-span-2 md:col-span-1">
               <span className={LABEL}>Contact</span>
               <a
-                href={`mailto:${CONTACT_DETAILS.email}`}
-                className={cn(VALUE, UNDERLINE, "break-all")}
+                href={`mailto:${contact.email}`}
+                className={cn(VALUE, UNDERLINE, "break-all uppercase")}
               >
-                {CONTACT_DETAILS.email}
+                {contact.email}
               </a>
               <br />
-              <a href={phoneHref} className={cn(VALUE, UNDERLINE)}>
-                {CONTACT_DETAILS.phone}
+              <a
+                href={phoneHref(contact.phone)}
+                className={cn(VALUE, UNDERLINE)}
+              >
+                {contact.phone}
               </a>
             </div>
 
             <div>
               <span className={LABEL}>Studio</span>
-              <p className={VALUE}>Based in {CONTACT_DETAILS.city}</p>
+              <p className={VALUE}>Based in {contact.basedIn}</p>
               <p className="mt-1 font-display text-base leading-snug italic md:text-xl">
-                Available worldwide
+                {contact.availability}
               </p>
             </div>
 
             <div>
               <span className={LABEL}>Follow</span>
               <ul>
-                {SOCIAL_LINKS.map(({ name, href }) => (
+                {contact.socialLinks.map(({ name, href }) => (
                   <li key={name}>
                     <a
                       href={href}
@@ -162,7 +168,6 @@ export default function SiteFooter() {
         </div>
 
         <div
-          ref={bottomRef}
           className={cn(
             SMALL,
             "mt-10 flex flex-col gap-5 border-t border-footer-text/10 pt-6 md:mt-auto md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3",
