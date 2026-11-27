@@ -20,6 +20,9 @@ export default function Navbar() {
   const open = openOn === pathname;
   // These pages carry the interactive monogram of the portfolio grid instead.
   const hasGridMenu = pathname === ROUTES.HOME || pathname === ROUTES.PORTFOLIO;
+  // A couple's gallery shows no monogram at all: nothing competes with the photographs.
+  const isGallery = /^\/portfolio\/[^/]+/.test(pathname);
+  const showMonogram = !hasGridMenu && !isGallery;
   const close = () => setOpenOn(null);
   const chromeTimer = useRef<number | undefined>(undefined);
 
@@ -68,7 +71,7 @@ export default function Navbar() {
       <Menu id={menuId} open={open} pathname={pathname} onClose={close} />
       <footer className="pointer-events-none fixed inset-x-0 bottom-0 z-50 text-paper mix-blend-difference">
         <Container className="flex max-w-none items-end justify-between px-3 pt-6 pb-8 md:px-5 md:pb-12">
-          {hasGridMenu ? (
+          {!showMonogram ? (
             <span />
           ) : (
             // Steps aside once the footer comes into view, like the portfolio's own monogram.

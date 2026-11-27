@@ -126,37 +126,48 @@ export default function NextWedding({ gallery }: { gallery: Gallery }) {
       href={galleryHref(gallery.slug)}
       data-gallery-snap
       aria-label={`Next wedding: ${gallery.title}`}
-      className="relative flex h-svh w-full shrink-0 flex-col items-center justify-center overflow-hidden px-8 text-center md:h-full md:w-[50vw]"
+      // Own white ground: the inverting text below needs something to invert against inside
+      // the gallery's moving track.
+      className="relative flex h-svh w-full shrink-0 flex-col items-center justify-center overflow-hidden bg-canvas px-8 text-center md:h-full md:w-[50vw]"
     >
-      <span aria-hidden="true" className="relative inline-block">
-        <span className={`${HEADING_CLASS} block text-ink/15`}>{HEADING}</span>
-        <span
-          className={`${HEADING_CLASS} absolute inset-0 block text-ink`}
-          style={{
-            clipPath: "inset(0 calc((1 - var(--next-progress, 0)) * 100%) 0 0)",
-          }}
-        >
-          {HEADING}
-        </span>
-        <span className="mt-3 block h-px w-full bg-ink/15 md:mt-4">
+      {/*
+       * Heading and names sit above the hover photo and invert where they cross it, like MENU
+       * and CONTACT: drawn white in difference mode, they read black on the white panel.
+       */}
+      <span className="pointer-events-none relative z-10 flex flex-col items-center text-paper mix-blend-difference">
+        <span aria-hidden="true" className="relative inline-block">
+          <span className={`${HEADING_CLASS} block text-paper/15`}>
+            {HEADING}
+          </span>
           <span
-            className="block h-full origin-left bg-ink"
-            style={{ scale: "var(--next-progress, 0) 1" }}
-          />
+            className={`${HEADING_CLASS} absolute inset-0 block text-paper`}
+            style={{
+              clipPath:
+                "inset(0 calc((1 - var(--next-progress, 0)) * 100%) 0 0)",
+            }}
+          >
+            {HEADING}
+          </span>
+          <span className="mt-3 block h-px w-full bg-paper/15 md:mt-4">
+            <span
+              className="block h-full origin-left bg-paper"
+              style={{ scale: "var(--next-progress, 0) 1" }}
+            />
+          </span>
         </span>
-      </span>
 
-      <span
-        aria-hidden="true"
-        className="mt-8 font-display text-3xl leading-none md:mt-10 md:text-4xl lg:text-5xl"
-      >
-        {firstName}
-        {secondName && (
-          <>
-            <span className="mx-2 text-xl md:text-2xl">&amp;</span>
-            <em className="italic">{secondName}</em>
-          </>
-        )}
+        <span
+          aria-hidden="true"
+          className="mt-8 font-display text-3xl leading-none md:mt-10 md:text-4xl lg:text-5xl"
+        >
+          {firstName}
+          {secondName && (
+            <>
+              <span className="mx-2 text-xl md:text-2xl">&amp;</span>
+              <em className="italic">{secondName}</em>
+            </>
+          )}
+        </span>
       </span>
 
       {/* Phones have no cursor to follow, so the cover simply sits under the names. */}
@@ -174,7 +185,7 @@ export default function NextWedding({ gallery }: { gallery: Gallery }) {
       <div
         ref={followerRef}
         aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-0 hidden aspect-[3/4] w-[16vw] opacity-0 transition-opacity duration-500 data-active:opacity-100 md:block"
+        className="pointer-events-none absolute top-0 left-0 z-0 hidden aspect-[3/4] w-[16vw] opacity-0 transition-opacity duration-500 data-active:opacity-100 md:block"
       >
         <div className="absolute inset-0 scale-90 transition-[scale] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] in-data-active:scale-100">
           <Image

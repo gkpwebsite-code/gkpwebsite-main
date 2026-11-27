@@ -12,7 +12,10 @@ import {
 import { ROUTES, type Gallery, type GalleryImage } from "@/lib/constants";
 import { allowHorizontalGestures, useLenis } from "@/lib/lenis";
 import { SIDE_LABEL } from "@/lib/sideLabel";
+import { previousPathname } from "@/lib/visit-history";
 import { cn } from "@/lib/utils";
+import GalleryClip from "./GalleryClip";
+import GalleryFlipIntro, { COVER_SIZES } from "./GalleryFlipIntro";
 import GalleryLightbox from "./GalleryLightbox";
 import NextWedding from "./NextWedding";
 
@@ -50,11 +53,45 @@ function useIsDesktop() {
 
 const imageNumber = (index: number) => String(index + 1).padStart(2, "0");
 
+/**
+ * How wide each photo really renders, so the browser fetches no more pixels than the screen
+ * shows (sharp on high-density screens, never oversized). Desktop: the strip is 82% of the
+ * screen height tall, so width follows the photo's shape; phones: full width.
+ */
 function imageSizes({ width, height }: GalleryImage) {
-  return width > height
-    ? "(min-width: 768px) 90vw, 100vw"
-    : "(min-width: 768px) 45vw, 100vw";
+  return `(min-width: 768px) calc(82vh * ${(width / height).toFixed(3)}), 100vw`;
 }
+
+/** One item in the gallery strip: a photograph (with its place among the photos) or a film clip. */
+type StripItem =
+  | { kind: "photo"; image: GalleryImage; photoIndex: number }
+  | { kind: "clip"; src: string };
+
+/**
+ * Photos in order, with any film clips spread evenly through the story rather than bunched at
+ * the start or end (two clips land about a third and two thirds of the way in).
+ */
+function buildStrip(
+  images: readonly GalleryImage[],
+  clips: readonly string[],
+): StripItem[] {
+  const items: StripItem[] = images.map((image, photoIndex) => ({
+    kind: "photo",
+    image,
+    photoIndex,
+  }));
+  clips.forEach((src, index) => {
+    const after = Math.round(
+      ((index + 1) * images.length) / (clips.length + 1),
+    );
+    // Each earlier clip already shifted later positions along by one.
+    items.splice(after + index, 0, { kind: "clip", src });
+  });
+  return items;
+}
+
+/** Photos loaded straight away; the rest follow one after another in the background. */
+const EAGER_PHOTOS = 3;
 
 export default function GalleryView({
   gallery,
@@ -71,30 +108,113 @@ export default function GalleryView({
   const lenis = useLenis();
   const isDesktop = useIsDesktop();
   const [lightboxAt, setLightboxAt] = useState<number | null>(null);
+  const [strip] = useState(() =>
+    buildStrip(gallery.images, gallery.clips ?? []),
+  );
+  /** The photo to open in the viewer for a strip position (a clip opens the photo after it). */
+  const photoAt = (stripIndex: number) => {
+    const rest = strip.slice(stripIndex);
+    const ahead = rest.find((item) => item.kind === "photo");
+    const behind = [...strip.slice(0, stripIndex)]
+      .reverse()
+      .find((item) => item.kind === "photo");
+    const item = ahead ?? behind;
+    return item?.kind === "photo" ? item.photoIndex : 0;
+  };
+  // On desktop the strip moves sideways, so photos come into view faster than the browser's
+  // own lazy loading reacts. Each photo that finishes loading lets the next one start, so the
+  // whole gallery fills in ahead of the visitor, one photo at a time (never all at once).
+  const [eagerUntil, setEagerUntil] = useState(EAGER_PHOTOS - 1);
+  // The flip-through opening, shown when the gallery is opened directly (see GalleryFlipIntro).
+  const [flipping, setFlipping] = useState(false);
+  // As the cover starts growing: names rise, side labels slide in, but the page's own cover
+  // stays hidden so it never shows twice behind the growing print.
+  const revealAfterFlip = useCallback(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    section.dataset.flipHold = "";
+    section.dataset.entered = "";
+  }, []);
+  // The print has landed exactly on the cover's spot: show the real cover and drop the print
+  // in the same frame, so the swap is invisible.
+  const endFlip = useCallback(() => {
+    const section = sectionRef.current;
+    if (section) {
+      section.dataset.flipped = "";
+      delete section.dataset.flipHold;
+    }
+    setFlipping(false);
+  }, []);
   const [firstName, secondName] = gallery.title.split(" & ");
   const position = galleries.findIndex(({ slug }) => slug === gallery.slug);
   const nextGallery = galleries[(position + 1) % galleries.length];
 
-  const closeLightbox = useCallback((index: number) => {
-    setLightboxAt(null);
-    const photo = stripRef.current?.children[index];
-    if (!photo) return;
-    const { top, height } = photo.getBoundingClientRect();
-    window.scrollTo({
-      top: window.scrollY + top + height / 2 - window.innerHeight / 2,
-      behavior: "instant",
-    });
-  }, []);
+  const closeLightbox = useCallback(
+    (index: number) => {
+      setLightboxAt(null);
+      // The viewer counts photos only; find that photo's place in the strip (clips sit between).
+      const stripIndex = strip.findIndex(
+        (item) => item.kind === "photo" && item.photoIndex === index,
+      );
+      const photo = stripRef.current?.children[stripIndex];
+      if (!photo) return;
+      const { top, height } = photo.getBoundingClientRect();
+      window.scrollTo({
+        top: window.scrollY + top + height / 2 - window.innerHeight / 2,
+        behavior: "instant",
+      });
+    },
+    [strip],
+  );
+
+  // Desktop: → and ← glide to the next or previous photograph (the viewer has its own keys).
+  useEffect(() => {
+    if (!isDesktop || lightboxAt !== null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const typing = (event.target as HTMLElement | null)?.closest(
+        "input, textarea, select, [contenteditable]",
+      );
+      if (typing) return;
+      const stops = Array.from(
+        sectionRef.current?.querySelectorAll<HTMLElement>(
+          "[data-gallery-snap]",
+        ) ?? [],
+      );
+      if (stops.length === 0) return;
+      const middle = window.innerWidth / 2;
+      const offset = (element: HTMLElement) => {
+        const { left, width } = element.getBoundingClientRect();
+        return left + width / 2 - middle;
+      };
+      let current = 0;
+      stops.forEach((stop, index) => {
+        if (Math.abs(offset(stop)) < Math.abs(offset(stops[current])))
+          current = index;
+      });
+      const target = stops[current + (event.key === "ArrowRight" ? 1 : -1)];
+      if (!target) return;
+      event.preventDefault();
+      // Sideways movement follows the page's vertical scroll one-to-one.
+      const from = lenis ? lenis.scroll : window.scrollY;
+      if (lenis) lenis.scrollTo(from + offset(target), { duration: 1 });
+      else window.scrollTo({ top: from + offset(target), behavior: "smooth" });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isDesktop, lightboxAt, lenis]);
 
   // Phones: tapping a photo opens it in the viewer; tapping the names or cover screen glides on to the next.
   const handleTap = (event: React.MouseEvent<HTMLElement>) => {
     if (window.matchMedia(DESKTOP_QUERY).matches) return;
     if ((event.target as HTMLElement).closest("a")) return;
-    const photo = (event.target as HTMLElement).closest(
-      "[data-gallery-reveal]",
-    );
-    const photos = Array.from(stripRef.current?.children ?? []);
-    if (photo) setLightboxAt(photos.indexOf(photo));
+    const item = (event.target as HTMLElement).closest("[data-gallery-reveal]");
+    const items = Array.from(stripRef.current?.children ?? []);
+    const stripIndex = item ? items.indexOf(item) : -1;
+    // Photos open in the viewer; a film clip (or anything else) glides on to the next.
+    if (stripIndex >= 0 && strip[stripIndex]?.kind === "photo")
+      setLightboxAt(photoAt(stripIndex));
     else showNext();
   };
 
@@ -146,7 +266,16 @@ export default function GalleryView({
     };
 
     let introObserver: MutationObserver | undefined;
-    if (root.dataset.intro) {
+    let flipTimer = 0;
+    if ("galleryFlip" in root.dataset) {
+      // Opened directly (link or reload): the flip-through-the-prints opening plays first and
+      // starts the entrance itself. Flag is single-use, so in-site visits keep the quick reveal.
+      // Cleared only when the opening really starts, so a re-run of this effect keeps it.
+      flipTimer = window.setTimeout(() => {
+        delete root.dataset.galleryFlip;
+        setFlipping(true);
+      }, 0);
+    } else if (root.dataset.intro) {
       enter();
     } else {
       introObserver = new MutationObserver(() => {
@@ -160,6 +289,7 @@ export default function GalleryView({
     return () => {
       introObserver?.disconnect();
       cancelAnimationFrame(frame);
+      window.clearTimeout(flipTimer);
       delete root.dataset.gallery;
     };
   }, []);
@@ -381,10 +511,31 @@ export default function GalleryView({
   return (
     <section ref={sectionRef} className="relative bg-canvas text-ink">
       <h1 className="sr-only">{gallery.title}</h1>
+      {flipping && (
+        <GalleryFlipIntro
+          gallery={gallery}
+          onReveal={revealAfterFlip}
+          onDone={endFlip}
+        />
+      )}
       <div className="pointer-events-none fixed top-6 left-3 z-50 text-paper mix-blend-difference md:left-5">
         <div data-gallery-edge>
           <Link
             href={ROUTES.HOME}
+            onClick={(event) => {
+              // Came here from the portfolio grid within this visit: step back through history,
+              // so the grid returns at the same spot and order. Otherwise open it fresh.
+              const previous = previousPathname();
+              if (
+                (previous === ROUTES.HOME || previous === ROUTES.PORTFOLIO) &&
+                !event.metaKey &&
+                !event.ctrlKey &&
+                !event.shiftKey
+              ) {
+                event.preventDefault();
+                window.history.back();
+              }
+            }}
             className={cn(
               SIDE_LABEL,
               "block rotate-180 transition-opacity duration-300 hover:opacity-60 focus-visible:opacity-60",
@@ -415,7 +566,7 @@ export default function GalleryView({
           <div data-gallery-edge>
             <button
               type="button"
-              onClick={() => setLightboxAt(shownRef.current)}
+              onClick={() => setLightboxAt(photoAt(shownRef.current))}
               aria-label="View all photographs"
               className="pointer-events-auto grid size-5 cursor-pointer grid-cols-3 gap-[3px] transition-opacity duration-300 active:opacity-60"
             >
@@ -447,7 +598,7 @@ export default function GalleryView({
               aria-hidden="true"
               className="mt-8 font-display text-6xl leading-[0.95] md:text-7xl lg:text-8xl"
             >
-              <span className="-mx-[0.15em] -my-[0.1em] block overflow-hidden px-[0.15em] py-[0.1em]">
+              <span className="-mx-[0.15em] -mt-[0.1em] -mb-[0.32em] block overflow-hidden px-[0.15em] pt-[0.1em] pb-[0.32em]">
                 <span
                   data-gallery-line
                   className="block"
@@ -462,7 +613,7 @@ export default function GalleryView({
                 </span>
               </span>
               {secondName && (
-                <span className="-mx-[0.15em] -my-[0.1em] block overflow-hidden px-[0.15em] py-[0.1em]">
+                <span className="-mx-[0.15em] -mt-[0.1em] -mb-[0.32em] block overflow-hidden px-[0.15em] pt-[0.1em] pb-[0.32em]">
                   <em
                     data-gallery-line
                     className="block italic"
@@ -517,7 +668,7 @@ export default function GalleryView({
                   loading="eager"
                   fetchPriority="high"
                   quality={90}
-                  sizes="(min-width: 768px) 75vw, 150vw"
+                  sizes={COVER_SIZES}
                   className="object-cover"
                 />
               </div>
@@ -528,28 +679,47 @@ export default function GalleryView({
             ref={stripRef}
             className="flex flex-col md:h-full md:shrink-0 md:flex-row md:items-center md:gap-[1.5vw] md:px-[4vw]"
           >
-            {gallery.images.map((image, index) => (
-              <div
-                key={image.src}
-                data-gallery-reveal
-                data-gallery-snap
-                className="relative w-full shrink-0 overflow-hidden md:h-[82svh] md:w-auto"
-                style={{ aspectRatio: `${image.width} / ${image.height}` }}
-              >
-                <Image
-                  src={image.src}
-                  alt={`${gallery.title}, photograph ${index + 1}`}
-                  fill
-                  quality={90}
-                  sizes={imageSizes(image)}
-                  data-gallery-photo
-                  onLoad={(event) => {
-                    event.currentTarget.dataset.loaded = "";
-                  }}
-                  className="object-cover"
-                />
-              </div>
-            ))}
+            {strip.map((item, stripIndex) => {
+              if (item.kind === "clip")
+                return (
+                  <GalleryClip
+                    key={`clip-${item.src}`}
+                    src={item.src}
+                    poster={gallery.cover}
+                    label={`${gallery.title}, film`}
+                  />
+                );
+              const { image, photoIndex: index } = item;
+              return (
+                <div
+                  key={`${stripIndex}-${image.src}`}
+                  data-gallery-reveal
+                  data-gallery-snap
+                  className="relative w-full shrink-0 overflow-hidden md:h-[82svh] md:w-auto"
+                  style={{ aspectRatio: `${image.width} / ${image.height}` }}
+                >
+                  <Image
+                    src={image.src}
+                    alt={`${gallery.title}, photograph ${index + 1}`}
+                    fill
+                    quality={90}
+                    sizes={imageSizes(image)}
+                    loading={
+                      index < EAGER_PHOTOS || (isDesktop && index <= eagerUntil)
+                        ? "eager"
+                        : "lazy"
+                    }
+                    fetchPriority={index < EAGER_PHOTOS ? "high" : "auto"}
+                    data-gallery-photo
+                    onLoad={(event) => {
+                      event.currentTarget.dataset.loaded = "";
+                      setEagerUntil((current) => Math.max(current, index + 1));
+                    }}
+                    className="object-cover"
+                  />
+                </div>
+              );
+            })}
           </div>
 
           {nextGallery.slug !== gallery.slug && (

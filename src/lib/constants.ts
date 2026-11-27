@@ -97,7 +97,11 @@ export const CATEGORIES = [
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
 
-export type GalleryImage = { src: string; width: number; height: number };
+export type GalleryImage = {
+  src: string;
+  width: number;
+  height: number;
+};
 
 export type Gallery = {
   slug: string;

@@ -103,7 +103,7 @@ export default function PortfolioMenu({
                     setMenuOpen(false);
                     option.run();
                   }}
-                  className="group flex cursor-pointer items-center gap-4 font-logo-sub text-2xl leading-none tracking-[0.08em] uppercase md:text-4xl"
+                  className="group flex cursor-pointer items-center gap-4 font-logo-sub text-[1.875rem] leading-none tracking-[0.08em] uppercase md:text-5xl lg:text-6xl"
                 >
                   <span
                     aria-hidden="true"
