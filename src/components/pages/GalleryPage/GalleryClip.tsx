@@ -27,6 +27,22 @@ export default function GalleryClip({
     const frame = frameRef.current;
     const video = videoRef.current;
     if (!frame || !video) return;
+
+    // The video element is in the page from the server, so it can finish loading before this
+    // code runs and its "ready" events would be missed, leaving it invisible. Check its state
+    // directly, and listen from here as well.
+    const readShape = () => {
+      if (video.videoWidth && video.videoHeight)
+        setRatio(video.videoWidth / video.videoHeight);
+    };
+    const markLoaded = () => {
+      video.dataset.loaded = "";
+    };
+    if (video.readyState >= 1) readShape();
+    if (video.readyState >= 2) markLoaded();
+    video.addEventListener("loadedmetadata", readShape);
+    video.addEventListener("loadeddata", markLoaded);
+
     // Clips are large files, so each starts downloading about a screen before it arrives.
     const approach = new IntersectionObserver(
       ([entry]) => {
@@ -48,6 +64,8 @@ export default function GalleryClip({
     return () => {
       approach.disconnect();
       view.disconnect();
+      video.removeEventListener("loadedmetadata", readShape);
+      video.removeEventListener("loadeddata", markLoaded);
     };
   }, []);
 
@@ -69,13 +87,6 @@ export default function GalleryClip({
         preload="metadata"
         aria-label={label}
         data-gallery-photo
-        onLoadedMetadata={(event) => {
-          const { videoWidth, videoHeight } = event.currentTarget;
-          if (videoWidth && videoHeight) setRatio(videoWidth / videoHeight);
-        }}
-        onLoadedData={(event) => {
-          event.currentTarget.dataset.loaded = "";
-        }}
         className="absolute inset-0 size-full object-cover"
       />
     </div>
