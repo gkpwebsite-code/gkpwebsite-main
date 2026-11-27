@@ -6,6 +6,7 @@ import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { setLenis } from "@/lib/lenis";
+import { recordVisit } from "@/lib/visit-history";
 
 export default function SmoothScroll() {
   const pathname = usePathname();
@@ -65,6 +66,7 @@ export default function SmoothScroll() {
   // New pages open at the top; Back/Forward lands where the visitor left that page.
   useLayoutEffect(() => {
     pathRef.current = pathname;
+    recordVisit(pathname, cameBackRef.current);
     const target = cameBackRef.current
       ? (positionsRef.current.get(pathname) ?? 0)
       : 0;

@@ -1,4 +1,5 @@
 import CookieConsent from "@/components/layout/CookieConsent";
+import ImageGuard from "@/components/layout/ImageGuard";
 import Intro from "@/components/layout/Intro";
 import Navbar from "@/components/layout/Navbar";
 import PageTransition from "@/components/layout/PageTransition";
@@ -19,6 +20,7 @@ export default async function SiteLayout({
   return (
     <SiteSettingsProvider settings={settings}>
       <SmoothScroll />
+      <ImageGuard />
       <Intro />
       <Navbar />
       <main className="flex-1">
